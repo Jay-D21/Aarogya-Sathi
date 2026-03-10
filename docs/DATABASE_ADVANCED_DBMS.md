@@ -1,13 +1,15 @@
 # AAROGYA SATHI — Advanced DBMS Document
 ## ER, EER, Relational Schema, PL/SQL, Triggers & Advanced Features
 
-**Version:** 3.0 | **Date:** March 10, 2026 | **Database:** PostgreSQL 15+
+**Version:** 3.1 (B2C Only) | **Date:** March 10, 2026 | **Database:** PostgreSQL 15+ | **Tables:** 13
+
+> 📌 **Visual ER Diagram:** Open [ER_DIAGRAM.html](ER_DIAGRAM.html) in a browser for the interactive version with all 13 entities, relationships, and EER specialization diagrams.
 
 ---
 
 ## Table of Contents
 
-1. [ER Diagram](#1-er-diagram)
+1. [ER Diagram (13 Entities)](#1-er-diagram)
 2. [Enhanced ER (EER) Diagram](#2-enhanced-er-eer-diagram)
 3. [Relational Schema & Normalization](#3-relational-schema--normalization)
 4. [Custom Types & Domains](#4-custom-types--domains)
@@ -27,7 +29,25 @@
 
 ## 1. ER Diagram
 
-### 1.1 Entity-Relationship Diagram (15 Entities)
+### 1.1 Entities (13 Tables)
+
+| # | Entity | Primary Key | Description |
+|---|--------|-------------|-------------|
+| 1 | **USERS** | `id` (UUID) | Core user profile, auth, preferences |
+| 2 | **HEALTH_RECORDS** | `id` (UUID) | BP, sugar, symptoms, lifestyle, medication logs |
+| 3 | **CHAT_HISTORY** | `id` (UUID) | AI chat messages + responses |
+| 4 | **MEDICAL_REPORTS** | `id` (UUID) | Uploaded reports with OCR biomarkers |
+| 5 | **ENVIRONMENTAL_ALERTS** | `id` (UUID) | AQI, heatwave, cold wave alerts |
+| 6 | **HEALTH_CONDITIONS** | `id` (UUID) | Chronic conditions (diabetes, hypertension) |
+| 7 | **USER_PREFERENCES** | `id` (UUID) | Notification, voice, dark mode settings |
+| 8 | **AUTH_SESSIONS** | `id` (UUID) | JWT sessions, device tracking |
+| 9 | **ABDM_INTEGRATIONS** | `id` (UUID) | ABHA health ID linkage |
+| 10 | **SUBSCRIPTIONS** | `id` (UUID) | Free/Premium plan management |
+| 11 | **USER_ANALYTICS** | `id` (UUID) | Daily usage metrics |
+| 12 | **API_USAGE** | `id` (UUID) | Per-request token/cost tracking |
+| 13 | **USER_FEEDBACK** | `id` (UUID) | App ratings and feedback |
+
+### 1.2 ER Diagram (Mermaid)
 
 ```mermaid
 erDiagram
@@ -43,8 +63,6 @@ erDiagram
     USERS ||--o{ USER_ANALYTICS : "generates"
     USERS ||--o{ API_USAGE : "consumes"
     USERS ||--o{ USER_FEEDBACK : "submits"
-    USERS ||--o{ CORPORATE_EMPLOYEE_MAPPING : "enrolled_in"
-    CORPORATE_ACCOUNTS ||--o{ CORPORATE_EMPLOYEE_MAPPING : "manages"
 
     USERS {
         UUID id PK
@@ -52,21 +70,32 @@ erDiagram
         VARCHAR phone UK
         VARCHAR password_hash
         VARCHAR first_name
+        VARCHAR last_name
+        DATE date_of_birth
+        ENUM gender
         VARCHAR preferred_language
         VARCHAR preferred_city
-        VARCHAR subscription_plan
+        ENUM subscription_plan
         BOOLEAN is_active
         TIMESTAMP created_at
+        TIMESTAMP updated_at
+        TIMESTAMP deleted_at
     }
 
     HEALTH_RECORDS {
         UUID id PK
         UUID user_id FK
-        VARCHAR record_type
+        ENUM record_type
         INT bp_systolic
         INT bp_diastolic
+        INT heart_rate
         INT blood_sugar_fasting
+        INT blood_sugar_random
         DECIMAL weight_kg
+        TEXT symptom_description
+        INT severity_level
+        DECIMAL sleep_hours
+        INT exercise_minutes
         JSONB environmental_context
         TIMESTAMP recorded_at
     }
@@ -76,9 +105,12 @@ erDiagram
         UUID user_id FK
         TEXT user_message
         TEXT ai_response
+        VARCHAR message_language
         VARCHAR model_used
         INT tokens_used
+        INT response_time_ms
         BOOLEAN safety_check_passed
+        BOOLEAN contained_emergency_keywords
         TIMESTAMP created_at
     }
 
@@ -87,29 +119,39 @@ erDiagram
         UUID user_id FK
         DATE report_date
         VARCHAR report_type
+        VARCHAR lab_name
         JSONB biomarkers
         TEXT interpretation
         JSONB abnormal_values
         DECIMAL ocr_confidence
+        TIMESTAMP created_at
     }
 
     ENVIRONMENTAL_ALERTS {
         UUID id PK
         UUID user_id FK
-        VARCHAR alert_type
-        VARCHAR alert_severity
-        INT aqi_value
-        DECIMAL temperature
+        ENUM alert_type
+        ENUM alert_severity
+        VARCHAR alert_title
+        TEXT alert_description
         TEXT alert_recommendation
+        VARCHAR location_city
+        INT aqi_value
+        DECIMAL temperature_celsius
+        BOOLEAN is_read
+        TIMESTAMP created_at
     }
 
     HEALTH_CONDITIONS {
         UUID id PK
         UUID user_id FK
         VARCHAR condition_name
-        VARCHAR condition_status
+        ENUM condition_status
         VARCHAR severity_level
+        DATE diagnosed_date
         JSONB target_metrics
+        TEXT notes
+        TIMESTAMP created_at
     }
 
     USER_PREFERENCES {
@@ -120,6 +162,7 @@ erDiagram
         BOOLEAN voice_input_enabled
         VARCHAR voice_language
         BOOLEAN dark_mode
+        TIMESTAMP updated_at
     }
 
     AUTH_SESSIONS {
@@ -128,8 +171,12 @@ erDiagram
         VARCHAR access_token
         VARCHAR refresh_token
         VARCHAR device_type
+        VARCHAR device_name
+        VARCHAR ip_address
         TIMESTAMP expires_at
         BOOLEAN is_active
+        TIMESTAMP created_at
+        TIMESTAMP logged_out_at
     }
 
     ABDM_INTEGRATIONS {
@@ -138,16 +185,21 @@ erDiagram
         VARCHAR abha_number UK
         BOOLEAN consent_given
         VARCHAR integration_status
+        TIMESTAMP linked_at
     }
 
     SUBSCRIPTIONS {
         UUID id PK
         UUID user_id FK
-        VARCHAR plan_type
+        ENUM plan_type
+        VARCHAR plan_name
         DECIMAL billing_amount_inr
-        VARCHAR billing_cycle
+        ENUM billing_cycle
+        VARCHAR billing_status
+        TIMESTAMP subscription_start_date
         TIMESTAMP subscription_end_date
         BOOLEAN auto_renewal
+        TIMESTAMP created_at
     }
 
     USER_ANALYTICS {
@@ -155,17 +207,25 @@ erDiagram
         UUID user_id FK
         DATE date
         INT total_messages_sent
+        INT total_health_records_logged
+        INT total_reports_uploaded
         INT session_count
         JSONB feature_usage
+        BOOLEAN is_active_user
     }
 
     API_USAGE {
         UUID id PK
         UUID user_id FK
         VARCHAR endpoint_path
+        VARCHAR http_method
+        VARCHAR model_used
         INT input_tokens
         INT output_tokens
+        INT total_tokens
         DECIMAL estimated_cost_inr
+        INT response_status_code
+        TIMESTAMP created_at
     }
 
     USER_FEEDBACK {
@@ -174,81 +234,137 @@ erDiagram
         VARCHAR feedback_type
         INT overall_rating
         TEXT feedback_description
-        VARCHAR status
-    }
-
-    CORPORATE_ACCOUNTS {
-        UUID id PK
-        VARCHAR company_name UK
-        INT employee_count
-        DECIMAL contract_value_inr
-        INT assigned_employee_licenses
-        BOOLEAN is_active
-    }
-
-    CORPORATE_EMPLOYEE_MAPPING {
-        UUID id PK
-        UUID corporate_account_id FK
-        UUID user_id FK
-        VARCHAR employee_id
-        VARCHAR department
-        BOOLEAN data_sharing_permission
+        ENUM status
+        TIMESTAMP created_at
     }
 ```
 
-### 1.2 Cardinality Summary
+### 1.3 Relationship Summary
 
-| Relationship | Type | Description |
-|-------------|------|-------------|
-| USERS → HEALTH_RECORDS | 1:N | A user logs many health records |
-| USERS → CHAT_HISTORY | 1:N | A user sends many messages |
-| USERS → MEDICAL_REPORTS | 1:N | A user uploads many reports |
-| USERS → ENVIRONMENTAL_ALERTS | 1:N | A user receives many alerts |
-| USERS → HEALTH_CONDITIONS | 1:N | A user can have many conditions |
-| USERS → USER_PREFERENCES | 1:1 | Each user has exactly one preferences record |
-| USERS → AUTH_SESSIONS | 1:N | A user can have many active sessions |
-| USERS → ABDM_INTEGRATIONS | 1:0..1 | A user may or may not link ABHA |
-| USERS → SUBSCRIPTIONS | 1:N | A user can have subscription history |
-| USERS → CORPORATE_EMPLOYEE_MAPPING | 1:0..N | A user may be enrolled in 0+ corporate accounts |
-| CORPORATE_ACCOUNTS → CORPORATE_EMPLOYEE_MAPPING | 1:N | A company manages many employee links |
+| Parent | Relationship | Child | Cardinality | Participation |
+|--------|-------------|-------|-------------|---------------|
+| USERS | logs | HEALTH_RECORDS | 1:N | Partial |
+| USERS | sends | CHAT_HISTORY | 1:N | Partial |
+| USERS | uploads | MEDICAL_REPORTS | 1:N | Partial |
+| USERS | receives | ENVIRONMENTAL_ALERTS | 1:N | Partial |
+| USERS | has | HEALTH_CONDITIONS | 1:N | Partial |
+| USERS | configures | USER_PREFERENCES | 1:1 | **Total** |
+| USERS | authenticates | AUTH_SESSIONS | 1:N | Partial |
+| USERS | links | ABDM_INTEGRATIONS | 1:0..1 | Partial |
+| USERS | subscribes | SUBSCRIPTIONS | 1:N | **Total** |
+| USERS | generates | USER_ANALYTICS | 1:N | Partial |
+| USERS | consumes | API_USAGE | 1:N | Partial |
+| USERS | submits | USER_FEEDBACK | 1:N | Partial |
 
 ---
 
 ## 2. Enhanced ER (EER) Diagram
 
-### 2.1 Specialization / Generalization
+### 2.1 Specialization/Generalization — HEALTH_RECORDS
 
-```mermaid
-graph TB
-    HR[HEALTH_RECORDS<br/>Superclass] --> V[VITALS<br/>bp_systolic, bp_diastolic,<br/>heart_rate, blood_sugar]
-    HR --> S[SYMPTOMS<br/>symptom_description,<br/>severity, duration, triggers]
-    HR --> L[LIFESTYLE<br/>sleep_hours, exercise_mins,<br/>water_intake, stress_level]
-    HR --> M[MEDICATION<br/>medications_taken,<br/>adherence_status]
-
-    style HR fill:#4CAF50,color:white
-    style V fill:#2196F3,color:white
-    style S fill:#FF9800,color:white
-    style L fill:#9C27B0,color:white
-    style M fill:#F44336,color:white
-```
-
-**Mapping:** Implemented via `record_type` discriminator column in `health_records` table (single-table inheritance):
-- `record_type = 'vitals'` → uses BP, sugar, heart_rate columns
-- `record_type = 'symptom'` → uses symptom_description, severity columns
-- `record_type = 'lifestyle'` → uses sleep, exercise, water columns
-- `record_type = 'medication'` → uses medications_taken array
-
-### 2.2 Aggregation
+**Type:** Disjoint, Total Specialization via `record_type` discriminator
 
 ```
-USERS ──── participates_in ──── CORPORATE_EMPLOYEE_MAPPING
-                                        │
-                                  aggregation of
-                                        │
-                               CORPORATE_ACCOUNTS
+                    ┌─────────────────────┐
+                    │   HEALTH_RECORDS     │
+                    │   (Superclass)       │
+                    │                     │
+                    │ id (PK), user_id (FK)│
+                    │ recorded_at         │
+                    │ environmental_context│
+                    └────────┬────────────┘
+                             │
+                    discriminator: record_type
+                             │
+          ┌──────────┬───────┴───────┬──────────┐
+          │          │               │          │
+    ┌─────▼────┐ ┌───▼──────┐ ┌─────▼────┐ ┌───▼────────┐
+    │ VITALS   │ │ SYMPTOMS │ │LIFESTYLE │ │ MEDICATION │
+    │          │ │          │ │          │ │            │
+    │bp_systolic│ │symptom_  │ │sleep_hrs │ │medications │
+    │bp_diastol│ │descriptn │ │exercise  │ │_taken[]    │
+    │heart_rate│ │severity  │ │water_    │ │adherence_  │
+    │sugar_    │ │duration  │ │intake    │ │status      │
+    │fasting   │ │body_area │ │stress_   │ │side_effects│
+    │sugar_    │ │triggers  │ │level     │ │            │
+    │random    │ │          │ │diet_     │ │            │
+    │weight_kg │ │          │ │quality   │ │            │
+    └──────────┘ └──────────┘ └──────────┘ └────────────┘
 ```
 
-The `corporate_employee_mapping` table is an aggregation entity that links users to corporate accounts with additional attributes (employee_id, department, data_sharing_permission).
+**Mapping:** Single-table inheritance. All subclass attributes exist as nullable columns in `health_records`. The `record_type` ENUM determines which columns are populated.
+
+### 2.2 Specialization — SUBSCRIPTIONS
+
+**Type:** Disjoint, Total Specialization via `plan_type`
+
+```
+                    ┌─────────────────┐
+                    │  SUBSCRIPTIONS  │
+                    │  (Superclass)   │
+                    └────────┬────────┘
+                             │
+                    discriminator: plan_type
+                             │
+                   ┌─────────┴─────────┐
+                   │                   │
+             ┌─────▼─────┐      ┌──────▼──────┐
+             │   FREE    │      │   PREMIUM   │
+             │           │      │             │
+             │amt = ₹0   │      │amt = ₹99/mo │
+             │limited:   │      │unlimited:   │
+             │ 5 msg/day │      │ chat, voice │
+             │ no voice  │      │ OCR reports │
+             │ no OCR    │      │ priority API│
+             └───────────┘      └─────────────┘
+```
+
+### 2.3 Specialization — ENVIRONMENTAL_ALERTS
+
+**Type:** Disjoint, Partial Specialization via `alert_type`
+
+```
+                    ┌──────────────────────┐
+                    │ ENVIRONMENTAL_ALERTS │
+                    │ (Superclass)         │
+                    └──────────┬───────────┘
+                               │
+                      discriminator: alert_type
+                               │
+          ┌──────────┬─────────┴──────────┬──────────────┐
+          │          │                    │              │
+    ┌─────▼────┐ ┌───▼──────┐  ┌──────────▼──┐ ┌────────▼────────┐
+    │AQI_SPIKE │ │ HEATWAVE │  │ COLD_WAVE   │ │HEALTH_THRESHOLD │
+    │          │ │          │  │             │ │                 │
+    │aqi_value │ │temp >40°C│  │temp <5°C    │ │triggered by     │
+    │pm25,pm10 │ │humidity  │  │             │ │abnormal vitals  │
+    │pollutants│ │          │  │             │ │(not env data)   │
+    └──────────┘ └──────────┘  └─────────────┘ └─────────────────┘
+```
+
+### 2.4 Aggregation — Chat + API Usage
+
+```
+    USERS ──── sends ──── CHAT_HISTORY
+                                │
+                         aggregation of
+                                │
+                           API_USAGE
+                    (tokens, cost, model per chat)
+```
+
+Each chat message automatically generates an API usage record via the `trg_log_chat_api_usage` trigger.
+
+### 2.5 Total vs Partial Participation
+
+| Type | Relationship | Reason |
+|------|-------------|--------|
+| **Total** | USERS → USER_PREFERENCES | Every user MUST have a preferences record (auto-created on registration) |
+| **Total** | USERS → SUBSCRIPTIONS | Every user MUST have at least a 'free' subscription (auto-created) |
+| **Partial** | USERS → ABDM_INTEGRATIONS | Optional — user MAY link ABHA ID |
+| **Partial** | USERS → MEDICAL_REPORTS | Optional — user MAY upload reports |
+| **Partial** | USERS → HEALTH_RECORDS | Optional — user MAY log health data |
+| **Partial** | USERS → CHAT_HISTORY | Optional — user MAY send messages |
 
 ---
 
@@ -256,40 +372,35 @@ The `corporate_employee_mapping` table is an aggregation entity that links users
 
 ### 3.1 Normalization Proof
 
-**1NF (First Normal Form):**
-- All tables have atomic values per cell ✅
-- Each table has a primary key (UUID) ✅
-- JSONB columns store structured data but each JSONB field is a single atomic unit ✅
+| Normal Form | Status | Evidence |
+|-------------|--------|----------|
+| **1NF** | ✅ | All values are atomic. JSONB columns store single structured units. Each table has a PK. |
+| **2NF** | ✅ | No partial dependencies — all PKs are single-column UUIDs. |
+| **3NF** | ✅ | No transitive dependencies. Subscription features are in `subscriptions` table, not in `users`. |
+| **BCNF** | ✅ | Every determinant is a candidate key. `users.email` and `users.phone` are both candidate keys. |
 
-**2NF (Second Normal Form):**
-- All non-key attributes are fully dependent on the entire primary key ✅
-- No partial dependencies exist (all PKs are single-column UUIDs) ✅
+### 3.2 Functional Dependencies
 
-**3NF (Third Normal Form):**
-- No transitive dependencies ✅
-- Example validation: In `users`, `subscription_plan` determines subscription features, but features are stored in `subscriptions.features_included` (separate table), not in `users` ✅
-
-**BCNF (Boyce-Codd Normal Form):**
-- Every determinant is a candidate key ✅
-- `users.email` and `users.phone` are both candidate keys (UNIQUE constraints) ✅
-
-### 3.2 Functional Dependencies (Selected Tables)
-
-**users:**
+**USERS:**
 ```
-id → {email, phone, password_hash, first_name, last_name, preferred_language, ...}
-email → {id}  (candidate key)
-phone → {id}  (candidate key)
+id → {email, phone, password_hash, first_name, last_name, ...}
+email → {id}    (candidate key)
+phone → {id}    (candidate key)
 ```
 
-**health_records:**
+**HEALTH_RECORDS:**
 ```
 id → {user_id, record_type, bp_systolic, bp_diastolic, ..., recorded_at}
 ```
 
-**chat_history:**
+**CHAT_HISTORY:**
 ```
 id → {user_id, user_message, ai_response, model_used, tokens_used, ...}
+```
+
+**SUBSCRIPTIONS:**
+```
+id → {user_id, plan_type, billing_amount_inr, ..., subscription_end_date}
 ```
 
 ---
@@ -297,16 +408,16 @@ id → {user_id, user_message, ai_response, model_used, tokens_used, ...}
 ## 4. Custom Types & Domains
 
 ```sql
--- Enum Types
+-- ═══ Enum Types ═══
 CREATE TYPE user_gender AS ENUM ('male', 'female', 'other', 'prefer_not_to_say');
-CREATE TYPE subscription_plan_type AS ENUM ('free', 'premium', 'corporate');
+CREATE TYPE subscription_plan_type AS ENUM ('free', 'premium');
 CREATE TYPE health_record_type AS ENUM ('symptom', 'vitals', 'medical_report', 'medication', 'lifestyle');
 CREATE TYPE alert_severity_level AS ENUM ('low', 'moderate', 'high', 'critical');
 CREATE TYPE condition_status_enum AS ENUM ('active', 'controlled', 'managed', 'resolved');
 CREATE TYPE feedback_status AS ENUM ('open', 'in_progress', 'resolved', 'closed');
 CREATE TYPE billing_cycle_type AS ENUM ('monthly', 'yearly');
 
--- Domains with constraints
+-- ═══ Domains with Constraints ═══
 CREATE DOMAIN email_domain AS VARCHAR(255)
     CHECK (VALUE ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
 
@@ -330,17 +441,13 @@ CREATE DOMAIN severity_domain AS INT
 
 ## 5. Stored Procedures
 
-### 5.1 Create User with Preferences
+### 5.1 Create User with Preferences (sp_create_user)
 
 ```sql
 CREATE OR REPLACE PROCEDURE sp_create_user(
-    p_email VARCHAR,
-    p_phone VARCHAR,
-    p_password_hash VARCHAR,
-    p_first_name VARCHAR,
-    p_last_name VARCHAR DEFAULT NULL,
-    p_language VARCHAR DEFAULT 'en',
-    p_city VARCHAR DEFAULT NULL
+    p_email VARCHAR, p_phone VARCHAR, p_password_hash VARCHAR,
+    p_first_name VARCHAR, p_last_name VARCHAR DEFAULT NULL,
+    p_language VARCHAR DEFAULT 'en', p_city VARCHAR DEFAULT NULL
 )
 LANGUAGE plpgsql AS $$
 DECLARE
@@ -354,7 +461,7 @@ BEGIN
             p_language, p_city, true, CURRENT_TIMESTAMP)
     RETURNING id INTO v_user_id;
 
-    -- Auto-create preferences record
+    -- Auto-create preferences
     INSERT INTO user_preferences (user_id, voice_language)
     VALUES (v_user_id, p_language);
 
@@ -368,26 +475,20 @@ BEGIN
     VALUES (v_user_id, CURRENT_DATE, true, true);
 
     RAISE NOTICE 'User created: % (ID: %)', p_email, v_user_id;
-
 EXCEPTION
     WHEN unique_violation THEN
         RAISE EXCEPTION 'Email or phone already registered: %', p_email;
-    WHEN OTHERS THEN
-        RAISE EXCEPTION 'User creation failed: %', SQLERRM;
 END;
 $$;
 ```
 
-### 5.2 Log Health Record with Alert Check
+### 5.2 Log Health Record with ICMR Alert Check (sp_log_health_record)
 
 ```sql
 CREATE OR REPLACE PROCEDURE sp_log_health_record(
-    p_user_id UUID,
-    p_record_type VARCHAR,
-    p_bp_systolic INT DEFAULT NULL,
-    p_bp_diastolic INT DEFAULT NULL,
-    p_sugar_fasting INT DEFAULT NULL,
-    p_sugar_random INT DEFAULT NULL,
+    p_user_id UUID, p_record_type VARCHAR,
+    p_bp_systolic INT DEFAULT NULL, p_bp_diastolic INT DEFAULT NULL,
+    p_sugar_fasting INT DEFAULT NULL, p_sugar_random INT DEFAULT NULL,
     p_city VARCHAR DEFAULT NULL
 )
 LANGUAGE plpgsql AS $$
@@ -399,22 +500,21 @@ BEGIN
     -- Insert health record
     INSERT INTO health_records (user_id, record_type, blood_pressure_systolic,
                                 blood_pressure_diastolic, blood_sugar_fasting,
-                                blood_sugar_random, recorded_location_city,
-                                recorded_at, data_source)
+                                blood_sugar_random, recorded_location_city, recorded_at)
     VALUES (p_user_id, p_record_type, p_bp_systolic, p_bp_diastolic,
-            p_sugar_fasting, p_sugar_random, p_city, CURRENT_TIMESTAMP, 'manual')
+            p_sugar_fasting, p_sugar_random, p_city, CURRENT_TIMESTAMP)
     RETURNING id INTO v_record_id;
 
-    -- Check BP thresholds (ICMR guidelines)
+    -- ICMR BP threshold check
     IF p_bp_systolic IS NOT NULL AND p_bp_systolic > 180 THEN
         v_alert_needed := true;
         v_alert_message := 'CRITICAL: BP systolic > 180 mmHg. Seek immediate medical attention.';
     ELSIF p_bp_systolic IS NOT NULL AND p_bp_systolic > 140 THEN
         v_alert_needed := true;
-        v_alert_message := 'WARNING: BP systolic > 140 mmHg (Stage 1 Hypertension per ICMR).';
+        v_alert_message := 'WARNING: BP > 140 mmHg (Stage 1 Hypertension per ICMR).';
     END IF;
 
-    -- Check sugar thresholds
+    -- ICMR sugar threshold check
     IF p_sugar_fasting IS NOT NULL AND p_sugar_fasting > 200 THEN
         v_alert_needed := true;
         v_alert_message := COALESCE(v_alert_message || ' ', '') ||
@@ -422,7 +522,7 @@ BEGIN
     ELSIF p_sugar_fasting IS NOT NULL AND p_sugar_fasting > 125 THEN
         v_alert_needed := true;
         v_alert_message := COALESCE(v_alert_message || ' ', '') ||
-            'WARNING: Fasting sugar 100-125 mg/dL (Pre-diabetic range per ICMR).';
+            'WARNING: Fasting sugar > 125 mg/dL (Pre-diabetic range per ICMR).';
     END IF;
 
     -- Create alert if needed
@@ -430,11 +530,10 @@ BEGIN
         INSERT INTO environmental_alerts (user_id, alert_type, alert_severity,
                                           alert_title, alert_description,
                                           alert_recommendation, location_city)
-        VALUES (p_user_id, 'health_threshold', 
+        VALUES (p_user_id, 'health_threshold',
                 CASE WHEN v_alert_message LIKE 'CRITICAL%' THEN 'critical' ELSE 'high' END,
                 'Health Reading Alert', v_alert_message,
-                'Please consult a healthcare professional for proper evaluation.',
-                p_city);
+                'Please consult a healthcare professional.', p_city);
     END IF;
 
     -- Update daily analytics
@@ -448,12 +547,11 @@ END;
 $$;
 ```
 
-### 5.3 Generate Analytics Report
+### 5.3 Generate Analytics Report (sp_generate_analytics_report)
 
 ```sql
 CREATE OR REPLACE PROCEDURE sp_generate_analytics_report(
-    p_user_id UUID,
-    p_days INT DEFAULT 30
+    p_user_id UUID, p_days INT DEFAULT 30
 )
 LANGUAGE plpgsql AS $$
 DECLARE
@@ -463,51 +561,35 @@ DECLARE
     v_avg_sugar DECIMAL;
     v_active_days INT;
 BEGIN
-    -- Calculate metrics
-    SELECT COUNT(*) INTO v_total_messages
-    FROM chat_history
+    SELECT COUNT(*) INTO v_total_messages FROM chat_history
     WHERE user_id = p_user_id AND created_at > NOW() - (p_days || ' days')::INTERVAL;
 
-    SELECT COUNT(*) INTO v_total_records
-    FROM health_records
+    SELECT COUNT(*) INTO v_total_records FROM health_records
     WHERE user_id = p_user_id AND recorded_at > NOW() - (p_days || ' days')::INTERVAL;
 
-    SELECT AVG(blood_pressure_systolic) INTO v_avg_bp_systolic
-    FROM health_records
-    WHERE user_id = p_user_id
-      AND record_type = 'vitals'
-      AND blood_pressure_systolic IS NOT NULL
+    SELECT AVG(blood_pressure_systolic) INTO v_avg_bp_systolic FROM health_records
+    WHERE user_id = p_user_id AND blood_pressure_systolic IS NOT NULL
       AND recorded_at > NOW() - (p_days || ' days')::INTERVAL;
 
-    SELECT AVG(blood_sugar_fasting) INTO v_avg_sugar
-    FROM health_records
-    WHERE user_id = p_user_id
-      AND blood_sugar_fasting IS NOT NULL
+    SELECT AVG(blood_sugar_fasting) INTO v_avg_sugar FROM health_records
+    WHERE user_id = p_user_id AND blood_sugar_fasting IS NOT NULL
       AND recorded_at > NOW() - (p_days || ' days')::INTERVAL;
 
-    SELECT COUNT(DISTINCT date) INTO v_active_days
-    FROM user_analytics
-    WHERE user_id = p_user_id
-      AND date > CURRENT_DATE - p_days
-      AND is_active_user = true;
+    SELECT COUNT(DISTINCT date) INTO v_active_days FROM user_analytics
+    WHERE user_id = p_user_id AND date > CURRENT_DATE - p_days AND is_active_user = true;
 
-    RAISE NOTICE 'Analytics Report (% days):', p_days;
-    RAISE NOTICE '  Messages sent: %', v_total_messages;
-    RAISE NOTICE '  Health records: %', v_total_records;
-    RAISE NOTICE '  Avg BP (systolic): %', ROUND(v_avg_bp_systolic, 1);
-    RAISE NOTICE '  Avg fasting sugar: %', ROUND(v_avg_sugar, 1);
-    RAISE NOTICE '  Active days: %/%', v_active_days, p_days;
+    RAISE NOTICE 'Analytics (% days): Messages=%, Records=%, AvgBP=%, AvgSugar=%, ActiveDays=%/%',
+        p_days, v_total_messages, v_total_records,
+        ROUND(v_avg_bp_systolic, 1), ROUND(v_avg_sugar, 1), v_active_days, p_days;
 END;
 $$;
 ```
 
-### 5.4 Process Environmental Alerts (Batch)
+### 5.4 Process Environmental Alerts — Batch (sp_process_environmental_alerts)
 
 ```sql
 CREATE OR REPLACE PROCEDURE sp_process_environmental_alerts(
-    p_city VARCHAR,
-    p_aqi INT,
-    p_temperature DECIMAL
+    p_city VARCHAR, p_aqi INT, p_temperature DECIMAL
 )
 LANGUAGE plpgsql AS $$
 DECLARE
@@ -516,53 +598,42 @@ DECLARE
     v_title VARCHAR;
     v_description TEXT;
 BEGIN
-    -- Determine alert severity and content
     IF p_aqi > 400 THEN
-        v_severity := 'critical';
-        v_title := 'Hazardous Air Quality Alert';
-        v_description := format('AQI has reached %s (Hazardous) in %s. All groups should avoid any outdoor activity.', p_aqi, p_city);
+        v_severity := 'critical'; v_title := 'Hazardous Air Quality';
+        v_description := format('AQI %s (Hazardous) in %s. Avoid outdoor activity.', p_aqi, p_city);
     ELSIF p_aqi > 300 THEN
-        v_severity := 'high';
-        v_title := 'Severe Air Quality Alert';
-        v_description := format('AQI is %s (Severe) in %s. Avoid outdoor activities, use N95 mask.', p_aqi, p_city);
+        v_severity := 'high'; v_title := 'Severe Air Quality';
+        v_description := format('AQI %s (Severe) in %s. Use N95 mask.', p_aqi, p_city);
     ELSIF p_temperature > 42 THEN
-        v_severity := 'high';
-        v_title := 'Extreme Heatwave Alert';
-        v_description := format('Temperature is %s°C in %s. Avoid sun 11am-3pm, stay hydrated.', p_temperature, p_city);
+        v_severity := 'high'; v_title := 'Extreme Heatwave';
+        v_description := format('Temperature %s°C in %s. Stay hydrated.', p_temperature, p_city);
     ELSIF p_temperature < 4 THEN
-        v_severity := 'moderate';
-        v_title := 'Cold Wave Alert';
-        v_description := format('Temperature is %s°C in %s. Layer clothing, warm fluids recommended.', p_temperature, p_city);
+        v_severity := 'moderate'; v_title := 'Cold Wave Alert';
+        v_description := format('Temperature %s°C in %s. Layer clothing.', p_temperature, p_city);
     ELSE
-        RETURN; -- No alert needed
+        RETURN;
     END IF;
 
-    -- Create alerts for all users in that city
     FOR v_user IN
         SELECT u.id FROM users u
         JOIN user_preferences up ON u.id = up.user_id
-        WHERE u.preferred_city ILIKE p_city
-          AND u.is_active = true
-          AND up.notifications_enabled = true
-          AND up.alert_aqi_threshold <= p_aqi
+        WHERE u.preferred_city ILIKE p_city AND u.is_active = true
+          AND up.notifications_enabled = true AND up.alert_aqi_threshold <= p_aqi
     LOOP
         INSERT INTO environmental_alerts (user_id, alert_type, alert_severity,
-                                          alert_title, alert_description,
-                                          location_city, aqi_value, temperature_celsius)
+                                          alert_title, alert_description, location_city,
+                                          aqi_value, temperature_celsius)
         VALUES (v_user.id,
                 CASE WHEN p_aqi > 300 THEN 'aqi_spike'
                      WHEN p_temperature > 42 THEN 'heatwave'
                      ELSE 'cold_wave' END,
-                v_severity, v_title, v_description,
-                p_city, p_aqi, p_temperature);
+                v_severity, v_title, v_description, p_city, p_aqi, p_temperature);
     END LOOP;
-
-    RAISE NOTICE 'Environmental alerts processed for city: %', p_city;
 END;
 $$;
 ```
 
-### 5.5 Check and Downgrade Expired Subscriptions
+### 5.5 Check and Downgrade Expired Subscriptions (sp_check_subscription_status)
 
 ```sql
 CREATE OR REPLACE PROCEDURE sp_check_subscription_status()
@@ -572,33 +643,26 @@ DECLARE
     v_count INT := 0;
 BEGIN
     FOR v_expired IN
-        SELECT s.id AS sub_id, s.user_id, s.plan_type, u.email
-        FROM subscriptions s
-        JOIN users u ON s.user_id = u.id
-        WHERE s.billing_status = 'active'
-          AND s.plan_type != 'free'
-          AND s.subscription_end_date < CURRENT_TIMESTAMP
-          AND s.auto_renewal = false
+        SELECT s.id AS sub_id, s.user_id, u.email
+        FROM subscriptions s JOIN users u ON s.user_id = u.id
+        WHERE s.billing_status = 'active' AND s.plan_type != 'free'
+          AND s.subscription_end_date < CURRENT_TIMESTAMP AND s.auto_renewal = false
     LOOP
-        -- Downgrade subscription
-        UPDATE subscriptions
-        SET billing_status = 'cancelled', cancellation_date = CURRENT_TIMESTAMP,
-            cancellation_reason = 'Auto-expired: subscription end date passed'
+        UPDATE subscriptions SET billing_status = 'cancelled',
+            cancellation_date = CURRENT_TIMESTAMP,
+            cancellation_reason = 'Auto-expired'
         WHERE id = v_expired.sub_id;
 
-        -- Update user plan
         UPDATE users SET subscription_plan = 'free' WHERE id = v_expired.user_id;
 
-        -- Create free subscription
         INSERT INTO subscriptions (user_id, plan_type, plan_name, billing_amount_inr,
                                    billing_cycle, billing_status)
-        VALUES (v_expired.user_id, 'free', 'Free Tier (Downgraded)', 0, 'monthly', 'active');
+        VALUES (v_expired.user_id, 'free', 'Free (Downgraded)', 0, 'monthly', 'active');
 
         v_count := v_count + 1;
-        RAISE NOTICE 'Downgraded subscription for user: %', v_expired.email;
     END LOOP;
 
-    RAISE NOTICE 'Total subscriptions downgraded: %', v_count;
+    RAISE NOTICE 'Downgraded % subscriptions', v_count;
 END;
 $$;
 ```
@@ -607,16 +671,12 @@ $$;
 
 ## 6. Functions
 
-### 6.1 Calculate BMI
+### 6.1 Calculate BMI (fn_calculate_bmi)
 
 ```sql
-CREATE OR REPLACE FUNCTION fn_calculate_bmi(
-    p_weight_kg DECIMAL,
-    p_height_cm DECIMAL
-)
+CREATE OR REPLACE FUNCTION fn_calculate_bmi(p_weight_kg DECIMAL, p_height_cm DECIMAL)
 RETURNS TABLE(bmi DECIMAL, category VARCHAR) AS $$
-DECLARE
-    v_bmi DECIMAL;
+DECLARE v_bmi DECIMAL;
 BEGIN
     IF p_weight_kg IS NULL OR p_height_cm IS NULL OR p_height_cm = 0 THEN
         RETURN QUERY SELECT NULL::DECIMAL, 'Invalid input'::VARCHAR;
@@ -625,11 +685,10 @@ BEGIN
 
     v_bmi := ROUND(p_weight_kg / ((p_height_cm / 100) ^ 2), 1);
 
-    RETURN QUERY
-    SELECT v_bmi,
+    RETURN QUERY SELECT v_bmi,
         CASE
             WHEN v_bmi < 18.5 THEN 'Underweight'
-            WHEN v_bmi < 23.0 THEN 'Normal (Asian BMI)'    -- Asian BMI cutoffs per WHO Asia-Pacific
+            WHEN v_bmi < 23.0 THEN 'Normal (Asian BMI)'
             WHEN v_bmi < 25.0 THEN 'Overweight'
             WHEN v_bmi < 30.0 THEN 'Obese Class I'
             ELSE 'Obese Class II+'
@@ -638,7 +697,7 @@ END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 ```
 
-### 6.2 Get AQI Level
+### 6.2 Get AQI Level (fn_get_aqi_level)
 
 ```sql
 CREATE OR REPLACE FUNCTION fn_get_aqi_level(p_aqi INT)
@@ -656,35 +715,25 @@ END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 ```
 
-### 6.3 Check ICMR Range
+### 6.3 Check ICMR Range (fn_check_icmr_range)
 
 ```sql
-CREATE OR REPLACE FUNCTION fn_check_icmr_range(
-    p_metric VARCHAR,
-    p_value DECIMAL
-)
+CREATE OR REPLACE FUNCTION fn_check_icmr_range(p_metric VARCHAR, p_value DECIMAL)
 RETURNS TABLE(status VARCHAR, normal_range VARCHAR, recommendation TEXT) AS $$
 BEGIN
-    RETURN QUERY
-    SELECT
+    RETURN QUERY SELECT
         CASE p_metric
             WHEN 'fasting_glucose' THEN
-                CASE WHEN p_value < 70 THEN 'Low'
-                     WHEN p_value <= 100 THEN 'Normal'
-                     WHEN p_value <= 125 THEN 'Pre-diabetic'
-                     ELSE 'Diabetic' END
+                CASE WHEN p_value < 70 THEN 'Low' WHEN p_value <= 100 THEN 'Normal'
+                     WHEN p_value <= 125 THEN 'Pre-diabetic' ELSE 'Diabetic' END
             WHEN 'bp_systolic' THEN
-                CASE WHEN p_value < 90 THEN 'Low'
-                     WHEN p_value <= 120 THEN 'Normal'
-                     WHEN p_value <= 139 THEN 'Elevated'
-                     ELSE 'High' END
+                CASE WHEN p_value < 90 THEN 'Low' WHEN p_value <= 120 THEN 'Normal'
+                     WHEN p_value <= 139 THEN 'Elevated' ELSE 'High' END
             WHEN 'hba1c' THEN
-                CASE WHEN p_value < 5.7 THEN 'Normal'
-                     WHEN p_value <= 6.4 THEN 'Pre-diabetic'
+                CASE WHEN p_value < 5.7 THEN 'Normal' WHEN p_value <= 6.4 THEN 'Pre-diabetic'
                      ELSE 'Diabetic' END
             WHEN 'cholesterol_total' THEN
-                CASE WHEN p_value < 200 THEN 'Normal'
-                     WHEN p_value <= 239 THEN 'Borderline'
+                CASE WHEN p_value < 200 THEN 'Normal' WHEN p_value <= 239 THEN 'Borderline'
                      ELSE 'High' END
             ELSE 'Unknown metric'
         END::VARCHAR,
@@ -697,60 +746,43 @@ BEGIN
         END::VARCHAR,
         CASE p_metric
             WHEN 'fasting_glucose' THEN
-                CASE WHEN p_value > 125 THEN 'Fasting glucose > 125 mg/dL. ICMR recommends consulting an endocrinologist.'
-                     WHEN p_value > 100 THEN 'Pre-diabetic range (ICMR). Lifestyle modifications recommended.'
-                     ELSE 'Within normal range per ICMR guidelines.' END
+                CASE WHEN p_value > 125 THEN 'Consult endocrinologist (ICMR).'
+                     WHEN p_value > 100 THEN 'Pre-diabetic. Lifestyle changes recommended.'
+                     ELSE 'Normal per ICMR.' END
             WHEN 'bp_systolic' THEN
-                CASE WHEN p_value > 140 THEN 'Stage 1 Hypertension (ICMR). Regular monitoring and doctor consultation advised.'
-                     WHEN p_value > 120 THEN 'Elevated BP. Reduce sodium, increase exercise.'
-                     ELSE 'Normal BP per ICMR guidelines.' END
-            ELSE 'Consult healthcare professional for interpretation.'
+                CASE WHEN p_value > 140 THEN 'Stage 1 Hypertension. Doctor consultation advised.'
+                     WHEN p_value > 120 THEN 'Elevated. Reduce sodium, increase exercise.'
+                     ELSE 'Normal per ICMR.' END
+            ELSE 'Consult healthcare professional.'
         END::TEXT;
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 ```
 
-### 6.4 Get User Health Summary
+### 6.4 Get User Health Summary (fn_get_user_health_summary)
 
 ```sql
 CREATE OR REPLACE FUNCTION fn_get_user_health_summary(p_user_id UUID)
 RETURNS JSONB AS $$
-DECLARE
-    v_result JSONB;
+DECLARE v_result JSONB;
 BEGIN
     SELECT jsonb_build_object(
         'user_id', p_user_id,
-        'latest_bp', (
-            SELECT jsonb_build_object('systolic', blood_pressure_systolic,
-                                       'diastolic', blood_pressure_diastolic,
-                                       'recorded_at', recorded_at)
-            FROM health_records
-            WHERE user_id = p_user_id AND blood_pressure_systolic IS NOT NULL
-            ORDER BY recorded_at DESC LIMIT 1
-        ),
-        'latest_sugar', (
-            SELECT jsonb_build_object('fasting', blood_sugar_fasting,
-                                       'random', blood_sugar_random,
-                                       'recorded_at', recorded_at)
-            FROM health_records
-            WHERE user_id = p_user_id AND blood_sugar_fasting IS NOT NULL
-            ORDER BY recorded_at DESC LIMIT 1
-        ),
-        'active_conditions', (
-            SELECT COALESCE(jsonb_agg(jsonb_build_object(
-                'condition', condition_name,
-                'status', condition_status,
-                'severity', severity_level
-            )), '[]'::jsonb)
-            FROM health_conditions
-            WHERE user_id = p_user_id AND condition_status IN ('active', 'controlled')
-        ),
+        'latest_bp', (SELECT jsonb_build_object('systolic', blood_pressure_systolic,
+            'diastolic', blood_pressure_diastolic, 'recorded_at', recorded_at)
+            FROM health_records WHERE user_id = p_user_id AND blood_pressure_systolic IS NOT NULL
+            ORDER BY recorded_at DESC LIMIT 1),
+        'latest_sugar', (SELECT jsonb_build_object('fasting', blood_sugar_fasting,
+            'recorded_at', recorded_at)
+            FROM health_records WHERE user_id = p_user_id AND blood_sugar_fasting IS NOT NULL
+            ORDER BY recorded_at DESC LIMIT 1),
+        'active_conditions', (SELECT COALESCE(jsonb_agg(jsonb_build_object(
+            'condition', condition_name, 'status', condition_status)), '[]'::jsonb)
+            FROM health_conditions WHERE user_id = p_user_id AND condition_status IN ('active', 'controlled')),
         'total_records', (SELECT COUNT(*) FROM health_records WHERE user_id = p_user_id),
-        'total_reports', (SELECT COUNT(*) FROM medical_reports WHERE user_id = p_user_id),
         'total_chats', (SELECT COUNT(*) FROM chat_history WHERE user_id = p_user_id),
         'generated_at', CURRENT_TIMESTAMP
     ) INTO v_result;
-
     RETURN v_result;
 END;
 $$ LANGUAGE plpgsql;
@@ -760,133 +792,103 @@ $$ LANGUAGE plpgsql;
 
 ## 7. PL/SQL Packages
 
-> **Note:** PostgreSQL doesn't natively support Oracle-style packages. We simulate packages using **schemas** as namespaces.
+> PostgreSQL uses **schemas** as package equivalents.
 
-### 7.1 Health Analytics Package
+### 7.1 Health Analytics Package (pkg_health_analytics)
 
 ```sql
 CREATE SCHEMA IF NOT EXISTS pkg_health_analytics;
 
--- Function: Get BP trend
+-- BP Trend (7/30/90 days)
 CREATE OR REPLACE FUNCTION pkg_health_analytics.get_bp_trend(
     p_user_id UUID, p_days INT DEFAULT 30
-)
-RETURNS TABLE(date DATE, avg_systolic DECIMAL, avg_diastolic DECIMAL, reading_count INT) AS $$
+) RETURNS TABLE(date DATE, avg_systolic DECIMAL, avg_diastolic DECIMAL, reading_count INT) AS $$
 BEGIN
     RETURN QUERY
-    SELECT recorded_at::DATE,
-           ROUND(AVG(blood_pressure_systolic), 1),
-           ROUND(AVG(blood_pressure_diastolic), 1),
-           COUNT(*)::INT
+    SELECT recorded_at::DATE, ROUND(AVG(blood_pressure_systolic), 1),
+           ROUND(AVG(blood_pressure_diastolic), 1), COUNT(*)::INT
     FROM health_records
-    WHERE user_id = p_user_id
-      AND blood_pressure_systolic IS NOT NULL
+    WHERE user_id = p_user_id AND blood_pressure_systolic IS NOT NULL
       AND recorded_at > NOW() - (p_days || ' days')::INTERVAL
-    GROUP BY recorded_at::DATE
-    ORDER BY recorded_at::DATE;
+    GROUP BY recorded_at::DATE ORDER BY recorded_at::DATE;
 END;
 $$ LANGUAGE plpgsql;
 
--- Function: Get sugar trend
+-- Sugar Trend
 CREATE OR REPLACE FUNCTION pkg_health_analytics.get_sugar_trend(
     p_user_id UUID, p_days INT DEFAULT 30
-)
-RETURNS TABLE(date DATE, avg_fasting DECIMAL, avg_random DECIMAL, reading_count INT) AS $$
+) RETURNS TABLE(date DATE, avg_fasting DECIMAL, avg_random DECIMAL, reading_count INT) AS $$
 BEGIN
     RETURN QUERY
-    SELECT recorded_at::DATE,
-           ROUND(AVG(blood_sugar_fasting), 1),
-           ROUND(AVG(blood_sugar_random), 1),
-           COUNT(*)::INT
+    SELECT recorded_at::DATE, ROUND(AVG(blood_sugar_fasting), 1),
+           ROUND(AVG(blood_sugar_random), 1), COUNT(*)::INT
     FROM health_records
     WHERE user_id = p_user_id
       AND (blood_sugar_fasting IS NOT NULL OR blood_sugar_random IS NOT NULL)
       AND recorded_at > NOW() - (p_days || ' days')::INTERVAL
-    GROUP BY recorded_at::DATE
-    ORDER BY recorded_at::DATE;
+    GROUP BY recorded_at::DATE ORDER BY recorded_at::DATE;
 END;
 $$ LANGUAGE plpgsql;
 
--- Function: Health risk score (0-100)
+-- Health Risk Score (0-100)
 CREATE OR REPLACE FUNCTION pkg_health_analytics.calculate_risk_score(p_user_id UUID)
 RETURNS TABLE(risk_score INT, risk_level VARCHAR, risk_factors TEXT[]) AS $$
 DECLARE
-    v_score INT := 0;
-    v_factors TEXT[] := '{}';
-    v_bp_systolic DECIMAL;
-    v_sugar DECIMAL;
-    v_bmi DECIMAL;
-    v_conditions INT;
+    v_score INT := 0; v_factors TEXT[] := '{}';
+    v_bp DECIMAL; v_sugar DECIMAL; v_conditions INT;
 BEGIN
-    -- Latest BP
-    SELECT AVG(blood_pressure_systolic) INTO v_bp_systolic
-    FROM health_records WHERE user_id = p_user_id
-      AND blood_pressure_systolic IS NOT NULL
+    SELECT AVG(blood_pressure_systolic) INTO v_bp FROM health_records
+    WHERE user_id = p_user_id AND blood_pressure_systolic IS NOT NULL
       AND recorded_at > NOW() - INTERVAL '7 days';
+    IF v_bp > 140 THEN v_score := v_score + 25; v_factors := array_append(v_factors, 'Hypertension');
+    ELSIF v_bp > 120 THEN v_score := v_score + 10; v_factors := array_append(v_factors, 'Elevated BP'); END IF;
 
-    IF v_bp_systolic > 140 THEN v_score := v_score + 25; v_factors := array_append(v_factors, 'Hypertension');
-    ELSIF v_bp_systolic > 120 THEN v_score := v_score + 10; v_factors := array_append(v_factors, 'Elevated BP');
-    END IF;
-
-    -- Latest sugar
-    SELECT AVG(blood_sugar_fasting) INTO v_sugar
-    FROM health_records WHERE user_id = p_user_id
-      AND blood_sugar_fasting IS NOT NULL
+    SELECT AVG(blood_sugar_fasting) INTO v_sugar FROM health_records
+    WHERE user_id = p_user_id AND blood_sugar_fasting IS NOT NULL
       AND recorded_at > NOW() - INTERVAL '7 days';
-
     IF v_sugar > 125 THEN v_score := v_score + 25; v_factors := array_append(v_factors, 'Diabetes risk');
-    ELSIF v_sugar > 100 THEN v_score := v_score + 10; v_factors := array_append(v_factors, 'Pre-diabetes');
-    END IF;
+    ELSIF v_sugar > 100 THEN v_score := v_score + 10; v_factors := array_append(v_factors, 'Pre-diabetes'); END IF;
 
-    -- Active conditions count
-    SELECT COUNT(*) INTO v_conditions
-    FROM health_conditions WHERE user_id = p_user_id AND condition_status = 'active';
-
+    SELECT COUNT(*) INTO v_conditions FROM health_conditions
+    WHERE user_id = p_user_id AND condition_status = 'active';
     v_score := v_score + (v_conditions * 10);
-    IF v_conditions > 0 THEN v_factors := array_append(v_factors, v_conditions || ' active conditions'); END IF;
 
-    RETURN QUERY SELECT
-        LEAST(v_score, 100),
+    RETURN QUERY SELECT LEAST(v_score, 100),
         CASE WHEN v_score < 20 THEN 'Low' WHEN v_score < 50 THEN 'Moderate'
-             WHEN v_score < 75 THEN 'High' ELSE 'Critical' END::VARCHAR,
-        v_factors;
+             WHEN v_score < 75 THEN 'High' ELSE 'Critical' END::VARCHAR, v_factors;
 END;
 $$ LANGUAGE plpgsql;
 ```
 
-### 7.2 User Management Package
+### 7.2 User Management Package (pkg_user_management)
 
 ```sql
 CREATE SCHEMA IF NOT EXISTS pkg_user_management;
 
--- Function: Deactivate inactive users
+-- Deactivate inactive users
 CREATE OR REPLACE FUNCTION pkg_user_management.deactivate_inactive_users(p_days INT DEFAULT 90)
 RETURNS INT AS $$
-DECLARE
-    v_count INT;
+DECLARE v_count INT;
 BEGIN
     UPDATE users SET is_active = false
     WHERE last_login_at < NOW() - (p_days || ' days')::INTERVAL
-      AND is_active = true
-      AND deleted_at IS NULL;
+      AND is_active = true AND deleted_at IS NULL;
     GET DIAGNOSTICS v_count = ROW_COUNT;
     RETURN v_count;
 END;
 $$ LANGUAGE plpgsql;
 
--- Function: Soft delete user (GDPR / DPDP)
+-- Soft delete user (DPDP Act compliance)
 CREATE OR REPLACE FUNCTION pkg_user_management.soft_delete_user(p_user_id UUID)
 RETURNS VOID AS $$
 BEGIN
     UPDATE users SET deleted_at = CURRENT_TIMESTAMP, is_active = false,
-                     email = 'deleted_' || p_user_id || '@redacted.com',
-                     phone = 'REDACTED', first_name = 'Deleted', last_name = 'User'
+        email = 'deleted_' || p_user_id || '@redacted.com',
+        phone = 'REDACTED', first_name = 'Deleted', last_name = 'User'
     WHERE id = p_user_id;
 
     UPDATE auth_sessions SET is_active = false, logged_out_at = CURRENT_TIMESTAMP
     WHERE user_id = p_user_id;
-
-    RAISE NOTICE 'User % soft-deleted and PII redacted', p_user_id;
 END;
 $$ LANGUAGE plpgsql;
 ```
@@ -895,7 +897,7 @@ $$ LANGUAGE plpgsql;
 
 ## 8. Triggers
 
-### 8.1 Auto-Update Timestamp
+### 8.1 Auto-Update Timestamp (trg_update_timestamp)
 
 ```sql
 CREATE OR REPLACE FUNCTION trg_fn_update_timestamp()
@@ -906,41 +908,32 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Apply to all tables with updated_at column
-CREATE TRIGGER trg_users_updated_at BEFORE UPDATE ON users
+-- Applied to all tables with updated_at
+CREATE TRIGGER trg_users_updated BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION trg_fn_update_timestamp();
-
-CREATE TRIGGER trg_health_records_updated_at BEFORE UPDATE ON health_records
+CREATE TRIGGER trg_health_records_updated BEFORE UPDATE ON health_records
     FOR EACH ROW EXECUTE FUNCTION trg_fn_update_timestamp();
-
-CREATE TRIGGER trg_chat_history_updated_at BEFORE UPDATE ON chat_history
+CREATE TRIGGER trg_chat_updated BEFORE UPDATE ON chat_history
     FOR EACH ROW EXECUTE FUNCTION trg_fn_update_timestamp();
-
-CREATE TRIGGER trg_medical_reports_updated_at BEFORE UPDATE ON medical_reports
+CREATE TRIGGER trg_reports_updated BEFORE UPDATE ON medical_reports
     FOR EACH ROW EXECUTE FUNCTION trg_fn_update_timestamp();
-
-CREATE TRIGGER trg_health_conditions_updated_at BEFORE UPDATE ON health_conditions
+CREATE TRIGGER trg_conditions_updated BEFORE UPDATE ON health_conditions
     FOR EACH ROW EXECUTE FUNCTION trg_fn_update_timestamp();
-
-CREATE TRIGGER trg_user_preferences_updated_at BEFORE UPDATE ON user_preferences
+CREATE TRIGGER trg_prefs_updated BEFORE UPDATE ON user_preferences
     FOR EACH ROW EXECUTE FUNCTION trg_fn_update_timestamp();
-
-CREATE TRIGGER trg_subscriptions_updated_at BEFORE UPDATE ON subscriptions
+CREATE TRIGGER trg_subs_updated BEFORE UPDATE ON subscriptions
     FOR EACH ROW EXECUTE FUNCTION trg_fn_update_timestamp();
 ```
 
-### 8.2 Audit Health Record Changes
+### 8.2 Audit Health Changes (trg_audit_health_changes)
 
 ```sql
 CREATE TABLE IF NOT EXISTS health_records_audit (
     audit_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    record_id UUID NOT NULL,
-    user_id UUID NOT NULL,
-    operation VARCHAR(10) NOT NULL,  -- INSERT, UPDATE, DELETE
-    old_data JSONB,
-    new_data JSONB,
-    changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    changed_by VARCHAR(100)
+    record_id UUID NOT NULL, user_id UUID NOT NULL,
+    operation VARCHAR(10) NOT NULL,
+    old_data JSONB, new_data JSONB,
+    changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE OR REPLACE FUNCTION trg_fn_audit_health_changes()
@@ -965,7 +958,7 @@ CREATE TRIGGER trg_audit_health_records
     FOR EACH ROW EXECUTE FUNCTION trg_fn_audit_health_changes();
 ```
 
-### 8.3 Validate BP Range
+### 8.3 Validate BP Range (trg_validate_bp_range)
 
 ```sql
 CREATE OR REPLACE FUNCTION trg_fn_validate_bp_range()
@@ -973,32 +966,29 @@ RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.blood_pressure_systolic IS NOT NULL THEN
         IF NEW.blood_pressure_systolic < 40 OR NEW.blood_pressure_systolic > 300 THEN
-            RAISE EXCEPTION 'Invalid systolic BP: %. Must be between 40-300 mmHg.', NEW.blood_pressure_systolic;
+            RAISE EXCEPTION 'Invalid systolic BP: %. Must be 40-300 mmHg.', NEW.blood_pressure_systolic;
         END IF;
     END IF;
-
     IF NEW.blood_pressure_diastolic IS NOT NULL THEN
         IF NEW.blood_pressure_diastolic < 20 OR NEW.blood_pressure_diastolic > 200 THEN
-            RAISE EXCEPTION 'Invalid diastolic BP: %. Must be between 20-200 mmHg.', NEW.blood_pressure_diastolic;
+            RAISE EXCEPTION 'Invalid diastolic BP: %. Must be 20-200 mmHg.', NEW.blood_pressure_diastolic;
         END IF;
     END IF;
-
     IF NEW.blood_pressure_systolic IS NOT NULL AND NEW.blood_pressure_diastolic IS NOT NULL THEN
         IF NEW.blood_pressure_systolic <= NEW.blood_pressure_diastolic THEN
-            RAISE EXCEPTION 'Systolic (%) must be greater than diastolic (%).', NEW.blood_pressure_systolic, NEW.blood_pressure_diastolic;
+            RAISE EXCEPTION 'Systolic (%) must be > diastolic (%).', NEW.blood_pressure_systolic, NEW.blood_pressure_diastolic;
         END IF;
     END IF;
-
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_validate_bp_reading
+CREATE TRIGGER trg_validate_bp
     BEFORE INSERT OR UPDATE ON health_records
     FOR EACH ROW EXECUTE FUNCTION trg_fn_validate_bp_range();
 ```
 
-### 8.4 Auto-Downgrade Expired Subscriptions
+### 8.4 Auto-Downgrade Expired Subscriptions (trg_auto_downgrade)
 
 ```sql
 CREATE OR REPLACE FUNCTION trg_fn_auto_downgrade_subscription()
@@ -1007,25 +997,20 @@ BEGIN
     IF NEW.subscription_end_date < CURRENT_TIMESTAMP
        AND OLD.subscription_end_date >= CURRENT_TIMESTAMP
        AND NEW.auto_renewal = false THEN
-
         NEW.billing_status := 'cancelled';
         NEW.cancellation_date := CURRENT_TIMESTAMP;
-        NEW.cancellation_reason := 'Auto-expired: end date passed without renewal';
-
         UPDATE users SET subscription_plan = 'free' WHERE id = NEW.user_id;
-
-        RAISE NOTICE 'Subscription auto-downgraded for user %', NEW.user_id;
     END IF;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_auto_downgrade_subscription
+CREATE TRIGGER trg_auto_downgrade
     BEFORE UPDATE ON subscriptions
     FOR EACH ROW EXECUTE FUNCTION trg_fn_auto_downgrade_subscription();
 ```
 
-### 8.5 Log API Usage on Chat Insert
+### 8.5 Log API Usage on Chat (trg_log_chat_api_usage)
 
 ```sql
 CREATE OR REPLACE FUNCTION trg_fn_log_chat_api_usage()
@@ -1041,88 +1026,72 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_log_chat_api_usage
+CREATE TRIGGER trg_log_chat_api
     AFTER INSERT ON chat_history
     FOR EACH ROW EXECUTE FUNCTION trg_fn_log_chat_api_usage();
 ```
 
-### 8.6 Emergency Alert Trigger
+### 8.6 Emergency Alert on Chat (trg_emergency_alert)
 
 ```sql
-CREATE OR REPLACE FUNCTION trg_fn_emergency_alert_on_chat()
+CREATE OR REPLACE FUNCTION trg_fn_emergency_alert()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.contained_emergency_keywords = true THEN
         INSERT INTO environmental_alerts (user_id, alert_type, alert_severity,
-                                          alert_title, alert_description,
-                                          alert_recommendation)
+            alert_title, alert_description, alert_recommendation)
         VALUES (NEW.user_id, 'health_emergency', 'critical',
-                '🚨 Emergency Keywords Detected',
-                'Emergency keywords were detected in your recent health conversation.',
-                'If you are experiencing a medical emergency, please call 108 immediately.');
+                '🚨 Emergency Detected',
+                'Emergency keywords detected in your conversation.',
+                'If experiencing a medical emergency, call 108 immediately.');
     END IF;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_emergency_alert_chat
+CREATE TRIGGER trg_emergency_alert
     AFTER INSERT ON chat_history
-    FOR EACH ROW
-    WHEN (NEW.contained_emergency_keywords = true)
-    EXECUTE FUNCTION trg_fn_emergency_alert_on_chat();
+    FOR EACH ROW WHEN (NEW.contained_emergency_keywords = true)
+    EXECUTE FUNCTION trg_fn_emergency_alert();
 ```
 
 ---
 
 ## 9. Cursors
 
-### 9.1 Batch Subscription Expiry Report
+### 9.1 Subscription Expiry Report (Batch Cursor)
 
 ```sql
 CREATE OR REPLACE FUNCTION fn_subscription_expiry_report()
-RETURNS TABLE(user_email VARCHAR, plan_type VARCHAR, days_remaining INT, action_needed VARCHAR) AS $$
+RETURNS TABLE(user_email VARCHAR, plan VARCHAR, days_left INT, action VARCHAR) AS $$
 DECLARE
     sub_cursor CURSOR FOR
-        SELECT u.email, s.plan_type, s.subscription_end_date, s.auto_renewal
-        FROM subscriptions s
-        JOIN users u ON s.user_id = u.id
+        SELECT u.email, s.plan_type, s.subscription_end_date
+        FROM subscriptions s JOIN users u ON s.user_id = u.id
         WHERE s.billing_status = 'active' AND s.plan_type != 'free'
         ORDER BY s.subscription_end_date ASC;
-    v_record RECORD;
-    v_days INT;
+    v_rec RECORD; v_days INT;
 BEGIN
-    FOR v_record IN sub_cursor LOOP
-        v_days := EXTRACT(DAY FROM v_record.subscription_end_date - CURRENT_TIMESTAMP);
-
-        RETURN QUERY SELECT
-            v_record.email::VARCHAR,
-            v_record.plan_type::VARCHAR,
-            v_days,
-            CASE
-                WHEN v_days < 0 THEN 'EXPIRED - Downgrade immediately'
-                WHEN v_days <= 3 THEN 'CRITICAL - Expiring in ' || v_days || ' days'
-                WHEN v_days <= 7 THEN 'WARNING - Send renewal reminder'
-                WHEN v_days <= 30 THEN 'INFO - Upcoming renewal'
-                ELSE 'OK'
-            END::VARCHAR;
+    FOR v_rec IN sub_cursor LOOP
+        v_days := EXTRACT(DAY FROM v_rec.subscription_end_date - CURRENT_TIMESTAMP);
+        RETURN QUERY SELECT v_rec.email::VARCHAR, v_rec.plan_type::VARCHAR, v_days,
+            CASE WHEN v_days < 0 THEN 'EXPIRED' WHEN v_days <= 3 THEN 'CRITICAL'
+                 WHEN v_days <= 7 THEN 'WARN' ELSE 'OK' END::VARCHAR;
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
 ```
 
-### 9.2 Batch Health Anomaly Scanner
+### 9.2 Health Anomaly Scanner (Batch Cursor)
 
 ```sql
 CREATE OR REPLACE FUNCTION fn_scan_health_anomalies(p_days INT DEFAULT 7)
-RETURNS TABLE(user_email VARCHAR, anomaly_type VARCHAR, value DECIMAL, threshold VARCHAR) AS $$
+RETURNS TABLE(user_email VARCHAR, anomaly VARCHAR, value DECIMAL, threshold VARCHAR) AS $$
 DECLARE
     health_cursor CURSOR FOR
-        SELECT u.email, hr.blood_pressure_systolic, hr.blood_pressure_diastolic,
-               hr.blood_sugar_fasting, hr.blood_sugar_random
-        FROM health_records hr
-        JOIN users u ON hr.user_id = u.id
-        WHERE hr.recorded_at > NOW() - (p_days || ' days')::INTERVAL
-          AND hr.record_type = 'vitals';
+        SELECT u.email, hr.blood_pressure_systolic, hr.blood_sugar_fasting
+        FROM health_records hr JOIN users u ON hr.user_id = u.id
+        WHERE hr.recorded_at > NOW() - (p_days || ' days')::INTERVAL AND hr.record_type = 'vitals';
     v_rec RECORD;
 BEGIN
     FOR v_rec IN health_cursor LOOP
@@ -1146,17 +1115,14 @@ $$ LANGUAGE plpgsql;
 ### 10.1 Regular Views
 
 ```sql
--- User Health Summary View
+-- User Health Summary
 CREATE OR REPLACE VIEW vw_user_health_summary AS
 SELECT u.id, u.first_name, u.email, u.preferred_city,
        COUNT(DISTINCT h.id) AS total_records,
        MAX(h.recorded_at) AS last_record_date,
-       ROUND(AVG(CASE WHEN h.blood_pressure_systolic IS NOT NULL
-                      THEN h.blood_pressure_systolic END), 1) AS avg_systolic,
-       ROUND(AVG(CASE WHEN h.blood_sugar_fasting IS NOT NULL
-                      THEN h.blood_sugar_fasting END), 1) AS avg_fasting_sugar
-FROM users u
-LEFT JOIN health_records h ON u.id = h.user_id
+       ROUND(AVG(h.blood_pressure_systolic) FILTER (WHERE h.blood_pressure_systolic IS NOT NULL), 1) AS avg_systolic,
+       ROUND(AVG(h.blood_sugar_fasting) FILTER (WHERE h.blood_sugar_fasting IS NOT NULL), 1) AS avg_fasting_sugar
+FROM users u LEFT JOIN health_records h ON u.id = h.user_id
 WHERE u.deleted_at IS NULL
 GROUP BY u.id, u.first_name, u.email, u.preferred_city;
 
@@ -1164,46 +1130,26 @@ GROUP BY u.id, u.first_name, u.email, u.preferred_city;
 CREATE OR REPLACE VIEW vw_active_users_30d AS
 SELECT u.id, u.first_name, u.email,
        COUNT(c.id) AS messages_sent, MAX(c.created_at) AS last_message
-FROM users u
-JOIN chat_history c ON u.id = c.user_id AND c.created_at > NOW() - INTERVAL '30 days'
-WHERE u.deleted_at IS NULL
-GROUP BY u.id, u.first_name, u.email
-HAVING COUNT(c.id) > 0;
-
--- Corporate Dashboard View
-CREATE OR REPLACE VIEW vw_corporate_dashboard AS
-SELECT ca.id, ca.company_name,
-       COUNT(DISTINCT cem.user_id) AS enrolled,
-       COUNT(DISTINCT CASE WHEN cem.enrollment_status = 'active' THEN cem.user_id END) AS active,
-       COUNT(DISTINCT h.id) FILTER (WHERE h.created_at > NOW() - INTERVAL '30 days') AS records_30d,
-       COUNT(DISTINCT c.id) FILTER (WHERE c.created_at > NOW() - INTERVAL '30 days') AS messages_30d
-FROM corporate_accounts ca
-LEFT JOIN corporate_employee_mapping cem ON ca.id = cem.corporate_account_id
-LEFT JOIN health_records h ON cem.user_id = h.user_id
-LEFT JOIN chat_history c ON cem.user_id = c.user_id
-WHERE ca.is_active = true
-GROUP BY ca.id, ca.company_name;
+FROM users u JOIN chat_history c ON u.id = c.user_id
+WHERE c.created_at > NOW() - INTERVAL '30 days' AND u.deleted_at IS NULL
+GROUP BY u.id, u.first_name, u.email;
 ```
 
-### 10.2 Materialized Views (for dashboards)
+### 10.2 Materialized View (Refreshed Hourly)
 
 ```sql
--- Materialized: Daily platform stats (refreshed hourly via cron)
 CREATE MATERIALIZED VIEW mv_platform_daily_stats AS
 SELECT CURRENT_DATE AS stat_date,
-       (SELECT COUNT(*) FROM users WHERE is_active = true) AS total_active_users,
+       (SELECT COUNT(*) FROM users WHERE is_active = true) AS active_users,
        (SELECT COUNT(*) FROM users WHERE created_at::DATE = CURRENT_DATE) AS new_users_today,
        (SELECT COUNT(*) FROM chat_history WHERE created_at::DATE = CURRENT_DATE) AS messages_today,
        (SELECT COUNT(*) FROM health_records WHERE recorded_at::DATE = CURRENT_DATE) AS records_today,
-       (SELECT COUNT(*) FROM medical_reports WHERE created_at::DATE = CURRENT_DATE) AS reports_today,
        (SELECT SUM(estimated_cost_inr) FROM api_usage WHERE created_at::DATE = CURRENT_DATE) AS api_cost_today,
        (SELECT COUNT(*) FROM subscriptions WHERE plan_type = 'premium' AND billing_status = 'active') AS premium_users
 WITH DATA;
 
 CREATE UNIQUE INDEX ON mv_platform_daily_stats (stat_date);
-
--- Refresh command (scheduled via pg_cron or application cron)
--- REFRESH MATERIALIZED VIEW CONCURRENTLY mv_platform_daily_stats;
+-- Refresh: REFRESH MATERIALIZED VIEW CONCURRENTLY mv_platform_daily_stats;
 ```
 
 ---
@@ -1211,25 +1157,26 @@ CREATE UNIQUE INDEX ON mv_platform_daily_stats (stat_date);
 ## 11. Advanced Indexing
 
 ```sql
--- B-Tree indexes (standard lookups)
-CREATE INDEX idx_health_records_user_type ON health_records(user_id, record_type);
+-- B-Tree (standard lookups)
+CREATE INDEX idx_health_user_type ON health_records(user_id, record_type);
+CREATE INDEX idx_chat_user_date ON chat_history(user_id, created_at DESC);
 CREATE INDEX idx_chat_safety ON chat_history(safety_check_passed) WHERE safety_check_passed = false;
 
--- GIN indexes (JSONB full-content search)
-CREATE INDEX idx_health_records_env_ctx ON health_records USING GIN (environmental_context);
-CREATE INDEX idx_medical_reports_biomarkers ON medical_reports USING GIN (biomarkers);
-CREATE INDEX idx_medical_reports_abnormal ON medical_reports USING GIN (abnormal_values);
+-- GIN (JSONB full-content search)
+CREATE INDEX idx_health_env_ctx ON health_records USING GIN (environmental_context);
+CREATE INDEX idx_reports_biomarkers ON medical_reports USING GIN (biomarkers);
+CREATE INDEX idx_reports_abnormal ON medical_reports USING GIN (abnormal_values);
 
--- Full-Text Search (GIN + tsvector)
+-- Full-Text Search
 CREATE INDEX idx_chat_fts ON chat_history USING GIN (to_tsvector('english', user_message));
 
--- Partial indexes (filter on common conditions)
-CREATE INDEX idx_users_active_only ON users(id) WHERE is_active = true AND deleted_at IS NULL;
+-- Partial Indexes
+CREATE INDEX idx_users_active ON users(id) WHERE is_active = true AND deleted_at IS NULL;
 CREATE INDEX idx_sessions_active ON auth_sessions(user_id) WHERE is_active = true;
 CREATE INDEX idx_alerts_critical ON environmental_alerts(user_id, created_at DESC) WHERE alert_severity = 'critical';
 
--- Covering indexes (index-only scans)
-CREATE INDEX idx_health_records_covering ON health_records(user_id, recorded_at DESC)
+-- Covering Index (index-only scan)
+CREATE INDEX idx_health_covering ON health_records(user_id, recorded_at DESC)
     INCLUDE (blood_pressure_systolic, blood_pressure_diastolic, blood_sugar_fasting);
 ```
 
@@ -1238,7 +1185,7 @@ CREATE INDEX idx_health_records_covering ON health_records(user_id, recorded_at 
 ## 12. Partitioning Strategy
 
 ```sql
--- Range-partition chat_history by month (high-volume table)
+-- Range-partition chat_history by month (highest volume table)
 CREATE TABLE chat_history_partitioned (
     LIKE chat_history INCLUDING ALL
 ) PARTITION BY RANGE (created_at);
@@ -1249,7 +1196,6 @@ CREATE TABLE chat_history_2026_02 PARTITION OF chat_history_partitioned
     FOR VALUES FROM ('2026-02-01') TO ('2026-03-01');
 CREATE TABLE chat_history_2026_03 PARTITION OF chat_history_partitioned
     FOR VALUES FROM ('2026-03-01') TO ('2026-04-01');
--- Auto-create future partitions via pg_partman extension
 
 -- Range-partition api_usage by month
 CREATE TABLE api_usage_partitioned (
@@ -1261,12 +1207,11 @@ CREATE TABLE api_usage_partitioned (
 
 ## 13. CTEs & Window Functions
 
-### 13.1 User Health Trend with Moving Average (CTE + Window)
+### 13.1 User Health Trend with 7-Day Moving Average
 
 ```sql
 WITH daily_readings AS (
-    SELECT user_id,
-           recorded_at::DATE AS reading_date,
+    SELECT user_id, recorded_at::DATE AS reading_date,
            AVG(blood_pressure_systolic) AS avg_systolic,
            AVG(blood_sugar_fasting) AS avg_fasting
     FROM health_records
@@ -1275,83 +1220,71 @@ WITH daily_readings AS (
 ),
 with_moving_avg AS (
     SELECT reading_date, avg_systolic, avg_fasting,
-           ROUND(AVG(avg_systolic) OVER (ORDER BY reading_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW), 1) AS bp_7day_moving_avg,
-           ROUND(AVG(avg_fasting) OVER (ORDER BY reading_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW), 1) AS sugar_7day_moving_avg,
-           LAG(avg_systolic) OVER (ORDER BY reading_date) AS prev_day_systolic,
-           ROW_NUMBER() OVER (ORDER BY reading_date DESC) AS recency_rank
+           ROUND(AVG(avg_systolic) OVER (ORDER BY reading_date
+               ROWS BETWEEN 6 PRECEDING AND CURRENT ROW), 1) AS bp_7day_ma,
+           ROUND(AVG(avg_fasting) OVER (ORDER BY reading_date
+               ROWS BETWEEN 6 PRECEDING AND CURRENT ROW), 1) AS sugar_7day_ma,
+           LAG(avg_systolic) OVER (ORDER BY reading_date) AS prev_systolic
     FROM daily_readings
 )
-SELECT reading_date, avg_systolic, avg_fasting,
-       bp_7day_moving_avg, sugar_7day_moving_avg,
-       CASE WHEN avg_systolic > prev_day_systolic THEN '↑ Rising'
-            WHEN avg_systolic < prev_day_systolic THEN '↓ Falling'
+SELECT reading_date, avg_systolic, avg_fasting, bp_7day_ma, sugar_7day_ma,
+       CASE WHEN avg_systolic > prev_systolic THEN '↑ Rising'
+            WHEN avg_systolic < prev_systolic THEN '↓ Falling'
             ELSE '→ Stable' END AS bp_trend
-FROM with_moving_avg
-ORDER BY reading_date;
+FROM with_moving_avg ORDER BY reading_date;
 ```
 
-### 13.2 Top Users by Engagement (Window Functions)
+### 13.2 Top Users by Engagement (RANK, NTILE)
 
 ```sql
 SELECT u.id, u.first_name, u.email,
        COUNT(c.id) AS total_messages,
        RANK() OVER (ORDER BY COUNT(c.id) DESC) AS engagement_rank,
        PERCENT_RANK() OVER (ORDER BY COUNT(c.id) DESC) AS percentile,
-       NTILE(4) OVER (ORDER BY COUNT(c.id) DESC) AS engagement_quartile
+       NTILE(4) OVER (ORDER BY COUNT(c.id) DESC) AS quartile
 FROM users u
 LEFT JOIN chat_history c ON u.id = c.user_id AND c.created_at > NOW() - INTERVAL '30 days'
 WHERE u.is_active = true
 GROUP BY u.id, u.first_name, u.email
-ORDER BY total_messages DESC
-LIMIT 50;
+ORDER BY total_messages DESC LIMIT 50;
 ```
 
 ---
 
 ## 14. Transaction Management
 
-### 14.1 ACID Demonstration — Health Record with Alerts
+### 14.1 ACID Demo — Health Record + Alert + Analytics
 
 ```sql
 BEGIN;
-    SAVEPOINT before_health_insert;
+    SAVEPOINT before_insert;
 
-    -- Step 1: Insert health record
     INSERT INTO health_records (user_id, record_type, blood_pressure_systolic,
                                 blood_pressure_diastolic, recorded_at)
-    VALUES ('user-uuid-here', 'vitals', 160, 100, NOW());
+    VALUES ('user-uuid', 'vitals', 160, 100, NOW());
 
-    SAVEPOINT after_health_insert;
+    SAVEPOINT after_insert;
 
-    -- Step 2: Update analytics (if this fails, rollback only this step)
+    -- If analytics update fails, roll back only this step
     BEGIN
         UPDATE user_analytics SET total_health_records_logged = total_health_records_logged + 1
-        WHERE user_id = 'user-uuid-here' AND date = CURRENT_DATE;
+        WHERE user_id = 'user-uuid' AND date = CURRENT_DATE;
     EXCEPTION WHEN OTHERS THEN
-        ROLLBACK TO after_health_insert;
-        RAISE NOTICE 'Analytics update failed, continuing without it';
+        ROLLBACK TO after_insert;
     END;
 
-    -- Step 3: Create alert for elevated BP
     INSERT INTO environmental_alerts (user_id, alert_type, alert_severity,
-                                      alert_title, alert_recommendation)
-    VALUES ('user-uuid-here', 'health_threshold', 'high',
-            'Elevated BP Detected', 'Your BP reading is 160/100. Please consult a doctor.');
-
+        alert_title, alert_recommendation)
+    VALUES ('user-uuid', 'health_threshold', 'high',
+            'Elevated BP', 'BP 160/100. Please consult a doctor.');
 COMMIT;
 ```
 
 ### 14.2 Isolation Levels
 
 ```sql
--- For health record reads: READ COMMITTED (default, prevents dirty reads)
-SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
-
--- For financial operations (subscriptions): SERIALIZABLE
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-BEGIN;
-    -- Subscription upgrade logic here
-COMMIT;
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;    -- Default, for reads
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;       -- For subscription billing
 ```
 
 ---
@@ -1359,49 +1292,44 @@ COMMIT;
 ## 15. Row-Level Security
 
 ```sql
--- Enable RLS on sensitive tables
 ALTER TABLE health_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE medical_reports ENABLE ROW LEVEL SECURITY;
 
--- Policy: Users can only see their own health records
-CREATE POLICY policy_health_records_user_isolation ON health_records
-    FOR ALL
-    USING (user_id = current_setting('app.current_user_id')::UUID);
+-- Users can only access their own data
+CREATE POLICY rls_health_records ON health_records
+    FOR ALL USING (user_id = current_setting('app.current_user_id')::UUID);
 
-CREATE POLICY policy_chat_history_user_isolation ON chat_history
-    FOR ALL
-    USING (user_id = current_setting('app.current_user_id')::UUID);
+CREATE POLICY rls_chat_history ON chat_history
+    FOR ALL USING (user_id = current_setting('app.current_user_id')::UUID);
 
-CREATE POLICY policy_medical_reports_user_isolation ON medical_reports
-    FOR ALL
-    USING (user_id = current_setting('app.current_user_id')::UUID);
+CREATE POLICY rls_medical_reports ON medical_reports
+    FOR ALL USING (user_id = current_setting('app.current_user_id')::UUID);
 
--- Usage in application:
--- SET LOCAL app.current_user_id = 'user-uuid-here';
--- SELECT * FROM health_records;  -- Only returns this user's records
+-- Usage: SET LOCAL app.current_user_id = 'user-uuid';
+--        SELECT * FROM health_records;  -- Only returns this user's data
 ```
 
 ---
 
 ## Summary
 
-| Feature | Count/Details |
-|---------|--------------|
-| **Entities (ER)** | 15 tables + 1 audit table |
+| Feature | Count |
+|---------|-------|
+| **Entities** | 13 tables + 1 audit table |
 | **Custom Types** | 7 ENUMs + 6 Domains |
-| **Stored Procedures** | 5 (`sp_create_user`, `sp_log_health_record`, `sp_generate_analytics_report`, `sp_process_environmental_alerts`, `sp_check_subscription_status`) |
-| **Functions** | 4 standalone + 5 in packages (`fn_calculate_bmi`, `fn_get_aqi_level`, `fn_check_icmr_range`, `fn_get_user_health_summary`) |
+| **Stored Procedures** | 5 |
+| **Functions** | 4 standalone + 5 in packages |
 | **Packages (Schemas)** | 2 (`pkg_health_analytics`, `pkg_user_management`) |
-| **Triggers** | 6 types, 10+ trigger instances |
+| **Triggers** | 6 types (13 trigger instances) |
 | **Cursors** | 2 explicit cursor functions |
-| **Views** | 3 regular + 1 materialized |
+| **Views** | 2 regular + 1 materialized |
 | **Advanced Indexes** | B-Tree, GIN, Full-Text, Partial, Covering |
-| **Partitioning** | Range partitioning on `chat_history` and `api_usage` |
-| **CTE + Window Functions** | Moving averages, rankings, percentiles |
-| **RLS Policies** | 3 tables with user-isolation policies |
+| **Partitioning** | Range on `chat_history` and `api_usage` |
+| **CTE + Window** | Moving averages, RANK, NTILE, LAG |
+| **RLS Policies** | 3 tables with user-isolation |
 
 ---
 
-**Document Status:** ✅ Complete
-**Version:** 3.0 | **Last Updated:** March 10, 2026
+**Document Status:** ✅ Complete (B2C Only — no corporate/B2B tables)
+**Version:** 3.1 | **Last Updated:** March 10, 2026

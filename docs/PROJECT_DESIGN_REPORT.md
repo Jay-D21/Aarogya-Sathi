@@ -37,7 +37,7 @@
 
 ## 1. Abstract
 
-Aarogya Sathi is a mobile-first AI health assistant designed for urban India. It leverages Google Gemini 2.0 Flash for conversational AI, integrates real-time environmental data (AQI, weather), supports multilingual interaction (Hindi, Marathi, English), and provides ICMR-compliant health awareness. The platform uses a **commercial external-API model** — no custom ML training. The system architecture employs Flutter (frontend), FastAPI (backend), PostgreSQL (primary DB), Redis (caching), and Google Cloud services (Vision OCR, Speech-to-Text, Text-to-Speech). It is designed as a scalable SaaS product with B2C (₹99/mo premium) and B2B (₹10–50L/yr corporate wellness) revenue streams.
+Aarogya Sathi is a mobile-first AI health assistant designed for urban India. It leverages Google Gemini 2.0 Flash for conversational AI, integrates real-time environmental data (AQI, weather), supports multilingual interaction (Hindi, Marathi, English), and provides ICMR-compliant health awareness. The platform uses a **commercial external-API model** — no custom ML training. The system architecture employs Flutter (frontend), FastAPI (backend), PostgreSQL (primary DB), Redis (caching), and Google Cloud services (Vision OCR, Speech-to-Text, Text-to-Speech). It is designed as a scalable B2C SaaS product with a freemium model (Free + ₹99/mo Premium).
 
 ---
 
@@ -64,7 +64,7 @@ No existing product combines:
 | Medical report OCR & interpretation | Telemedicine/video consultation |
 | Environmental alerts (AQI, weather) | Custom ML model training |
 | Multilingual support (EN, HI, MR) | Pharmacy/medicine ordering |
-| B2C & B2B subscription model | Insurance claim processing |
+| Freemium subscription model (Free + Premium) | Insurance claim processing |
 
 ---
 
@@ -77,7 +77,7 @@ Design and implement a mobile-first, AI-powered health companion that:
 3. **Tracks health metrics** (BP, blood sugar, symptoms) with trend visualization
 4. **Processes medical reports** via OCR and provides ICMR-guided interpretation
 5. Maintains **strict medical safety** — zero diagnosis, zero prescriptions, mandatory disclaimers
-6. Supports **commercial viability** via freemium B2C and B2B corporate wellness models
+6. Supports **commercial viability** via freemium B2C model (Free + ₹99/mo Premium)
 
 ---
 
@@ -204,7 +204,7 @@ graph TB
          │                  │                  │
    ┌─────▼────────┐  ┌─────▼──────────┐  ┌───▼───────────┐
    │ Gemini API   │  │ PostgreSQL     │  │ Redis         │
-   │ (700+ line   │  │ (15 tables)    │  │ (sessions +   │
+   │ (700+ line   │  │ (13 tables)    │  │ (sessions +   │
    │  sys prompt) │  │                │  │  cache)       │
    └─────┬────────┘  └────────────────┘  └───────────────┘
          │
@@ -317,23 +317,21 @@ graph LR
     U --> UC14
 ```
 
-### 7.2 Secondary Actor: Corporate Admin
+### 7.2 Secondary Actor: System Admin
 
 ```mermaid
 graph LR
-    subgraph "Corporate Module"
-        CU1[Manage Employee Enrollment]
-        CU2[View Wellness Dashboard]
-        CU3[Generate Health Reports]
-        CU4[Manage Licenses]
-        CU5[View API Usage]
+    subgraph "Admin Module"
+        AU1[View Platform Analytics]
+        AU2[Monitor API Usage]
+        AU3[Manage User Accounts]
+        AU4[View Safety Violations]
     end
 
-    CA((Corporate Admin)) --> CU1
-    CA --> CU2
-    CA --> CU3
-    CA --> CU4
-    CA --> CU5
+    SA((System Admin)) --> AU1
+    SA --> AU2
+    SA --> AU3
+    SA --> AU4
 ```
 
 ---
@@ -529,13 +527,13 @@ sequenceDiagram
 | **Tables** | `user_analytics`, `user_feedback`, `user_preferences` |
 | **Metrics** | Daily messages, reports uploaded, session time, feature usage |
 
-### 9.7 Corporate Module
+### 9.7 Subscription Module
 
 | Aspect | Details |
 |--------|---------|
-| **Tables** | `corporate_accounts`, `corporate_employee_mapping` |
-| **Features** | Employee enrollment, wellness dashboard, aggregate health reports |
-| **Revenue** | ₹10–50L/year per contract |
+| **Tables** | `subscriptions` |
+| **Plans** | Free (5 msg/day, no voice, no OCR) and Premium (₹99/mo, unlimited) |
+| **Features** | Plan upgrade/downgrade, auto-renewal, expiry management |
 
 ---
 
@@ -574,7 +572,7 @@ For each external API call:
 |-------|-----------|
 | **Transport** | TLS 1.3 (HTTPS everywhere) |
 | **Authentication** | JWT (HS256), bcrypt password hashing (12 rounds) |
-| **Authorization** | Role-based (user, corporate_admin, system_admin) |
+| **Authorization** | Role-based (user, system_admin) |
 | **Data at Rest** | AES-256 encryption for health data |
 | **Database** | PostgreSQL Row-Level Security (RLS) |
 | **API Security** | Rate limiting (Redis-backed), CORS whitelist, input validation (Pydantic) |
@@ -679,10 +677,8 @@ docker-compose.yml
 |--------|-------------|------------|
 | Free users | 50K–100K | 200K–500K |
 | Premium conversion (5–10%) | 2,500–10,000 | 10,000–50,000 |
-| Consumer revenue | ₹3–10 Lakhs | ₹20–50 Lakhs |
-| Corporate contracts | 3–5 | 10–20 |
-| B2B revenue | ₹30–125 Lakhs | ₹100–400 Lakhs |
-| **Total Year 1** | **₹33–135 Lakhs** | **₹120–450 Lakhs** |
+| Premium revenue (₹99/mo) | ₹3–12 Lakhs | ₹12–60 Lakhs |
+| **Total Year 1** | **₹3–12 Lakhs** | **₹12–60 Lakhs** |
 
 ---
 
@@ -719,7 +715,7 @@ docker-compose.yml
 |----------|------------|
 | Month 2–3 | Additional languages (Tamil, Telugu, Kannada), wearable integration (Fitbit, Apple Watch) |
 | Month 4–6 | ABDM/ABHA health ID integration, doctor directory & referral system |
-| Month 7–12 | Corporate wellness platform launch, hospital partnerships, insurance integrations |
+| Month 7–12 | Hospital partnerships, insurance integrations, corporate wellness (future B2B) |
 | Year 2 | International expansion (Bangladesh, Sri Lanka), custom fine-tuned AI model, telemedicine integration |
 
 ---
@@ -731,7 +727,7 @@ Aarogya Sathi addresses a genuine gap in India's healthcare landscape by combini
 1. **AI accessibility** — Gemini-powered health guidance in vernacular languages
 2. **Environmental intelligence** — Real-time AQI/weather correlation unique to this product
 3. **Medical safety** — Zero-diagnosis, zero-prescription, ICMR-compliant framework
-4. **Commercial viability** — Clear B2C + B2B revenue model with projected ₹33–450L/yr
+4. **Commercial viability** — Clear B2C freemium model (Free + ₹99/mo Premium)
 
 The architecture is designed for scalability (cloud-native, containerized), safety (multi-layer validation pipeline), and speed (6-week MVP timeline). By leveraging external APIs rather than custom model training, we minimize time-to-market while maintaining output quality.
 

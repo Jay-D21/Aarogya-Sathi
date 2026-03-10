@@ -623,8 +623,7 @@ Raw Data (PostgreSQL)
     ▼
 Analytics Dashboard (Flutter)
     ├─ User: Personal health trends, risk score
-    ├─ Admin: Platform stats, user engagement
-    └─ Corporate: Employee wellness dashboard
+    └─ Admin: Platform stats, user engagement, API cost tracking
 ```
 
 ---

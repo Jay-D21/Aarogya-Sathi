@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aarogya Sathi — ER & EER Diagrams</title>
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --border: #2d3248;
+            --text: #e2e8f0;
+            --text-dim: #8892b0;
+            --accent: #64ffda;
+            --accent2: #7c3aed;
+            --entity: #1e293b;
+            --pk: #f59e0b;
+            --fk: #38bdf8;
+            --attr: #94a3b8;
+            --rel-line: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow: auto;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 24px;
+            font-size: 1.8rem;
+            color: var(--accent);
+            letter-spacing: 1px;
+        }
+
+        h1 span { color: var(--text-dim); font-size: 0.9rem; display: block; margin-top: 4px; }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 0 24px 24px;
+        }
+
+        .tab {
+            padding: 10px 24px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .tab:hover { border-color: var(--accent); color: var(--text); }
+        .tab.active { background: var(--accent); color: var(--bg); font-weight: 600; border-color: var(--accent); }
+
+        .diagram-container {
+            display: none;
+            padding: 12px 24px 48px;
+        }
+
+        .diagram-container.active { display: block; }
+
+        /* ── ER Diagram ── */
+        .er-canvas {
+            position: relative;
+            width: 100%;
+            min-height: 1800px;
+        }
+
+        .entity {
+            position: absolute;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            min-width: 220px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .entity:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(100, 255, 218, 0.1);
+            border-color: var(--accent);
+        }
+
+        .entity-header {
+            background: linear-gradient(135deg, #1e3a5f, #1e293b);
+            padding: 10px 16px;
+            border-radius: 8px 8px 0 0;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            color: var(--accent);
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .entity-body { padding: 8px 0; }
+
+        .attr {
+            display: flex;
+            align-items: center;
+            padding: 4px 14px;
+            font-size: 0.78rem;
+            gap: 8px;
+        }
+
+        .attr:hover { background: rgba(100, 255, 218, 0.04); }
+
+        .attr-badge {
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 3px;
+            min-width: 22px;
+            text-align: center;
+        }
+
+        .badge-pk { background: var(--pk); color: #000; }
+        .badge-fk { background: var(--fk); color: #000; }
+        .badge-uk { background: #a855f7; color: #fff; }
+
+        .attr-name { color: var(--text); }
+        .attr-type { color: var(--text-dim); margin-left: auto; font-size: 0.7rem; }
+
+        /* ── SVG Lines ── */
+        .er-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .rel-line { stroke: var(--rel-line); stroke-width: 1.5; fill: none; }
+        .rel-text {
+            fill: var(--text-dim);
+            font-size: 11px;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        /* ── Legend ── */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            padding: 16px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+
+        /* ── EER Section ── */
+        .eer-section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .eer-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .eer-card h3 {
+            color: var(--accent);
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .eer-card p, .eer-card li {
+            color: var(--text-dim);
+            line-height: 1.7;
+            font-size: 0.9rem;
+        }
+
+        .eer-card ul { padding-left: 20px; }
+        .eer-card li { margin-bottom: 4px; }
+
+        .eer-tree {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+            font-family: 'Consolas', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            line-height: 1.8;
+            overflow-x: auto;
+            color: var(--text);
+        }
+
+        .eer-tree .super { color: var(--accent); font-weight: 700; }
+        .eer-tree .sub { color: var(--fk); }
+        .eer-tree .disc { color: var(--pk); }
+        .eer-tree .attr-t { color: var(--text-dim); }
+
+        .cardinality-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+
+        .cardinality-table th {
+            background: rgba(100, 255, 218, 0.1);
+            color: var(--accent);
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 0.8rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .cardinality-table td {
+            padding: 8px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .cardinality-table tr:hover td { background: rgba(100, 255, 218, 0.03); }
+    </style>
+</head>
+<body>
+
+    <h1>🏥 Aarogya Sathi — Database Diagrams
+        <span>13 Entities | PostgreSQL 15+ | B2C Health Companion</span>
+    </h1>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-color" style="background:var(--pk)"></div> Primary Key (PK)</div>
+        <div class="legend-item"><div class="legend-color" style="background:var(--fk)"></div> Foreign Key (FK)</div>
+        <div class="legend-item"><div class="legend-color" style="background:#a855f7"></div> Unique Key (UK)</div>
+        <div class="legend-item"><div class="legend-color" style="background:var(--rel-line)"></div> Relationship Line</div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('er')">ER Diagram</div>
+        <div class="tab" onclick="switchTab('eer')">EER Diagram</div>
+        <div class="tab" onclick="switchTab('cardinality')">Cardinality & Relationships</div>
+    </div>
+
+    <!-- ═══════════════ ER DIAGRAM ═══════════════ -->
+    <div id="tab-er" class="diagram-container active">
+        <div class="er-canvas" id="erCanvas">
+            <svg class="er-lines" id="erLines"></svg>
+        </div>
+    </div>
+
+    <!-- ═══════════════ EER DIAGRAM ═══════════════ -->
+    <div id="tab-eer" class="diagram-container">
+        <div class="eer-section">
+            <div class="eer-card">
+                <h3>1. Specialization / Generalization — HEALTH_RECORDS</h3>
+                <p>The <strong>HEALTH_RECORDS</strong> superclass is specialized into 4 subclasses via the <code>record_type</code> discriminator (disjoint, total specialization):</p>
+                <div class="eer-tree">
+<span class="super">HEALTH_RECORDS</span> (Superclass)
+│
+├── discriminator: <span class="disc">record_type</span>
+│
+├─── <span class="sub">VITALS</span> <span class="attr-t">(bp_systolic, bp_diastolic, heart_rate, blood_sugar_fasting, blood_sugar_random, blood_sugar_pp)</span>
+│
+├─── <span class="sub">SYMPTOMS</span> <span class="attr-t">(symptom_description, severity_level 1-10, duration, body_area, triggers)</span>
+│
+├─── <span class="sub">LIFESTYLE</span> <span class="attr-t">(sleep_hours, exercise_minutes, water_intake_liters, stress_level, diet_quality)</span>
+│
+└─── <span class="sub">MEDICATION</span> <span class="attr-t">(medications_taken[], adherence_status, side_effects)</span>
+                </div>
+                <p><strong>Mapping:</strong> Single-table inheritance. All subclass attributes exist as nullable columns in <code>health_records</code>. The <code>record_type</code> ENUM determines which columns are populated.</p>
+            </div>
+
+            <div class="eer-card">
+                <h3>2. Specialization — SUBSCRIPTIONS</h3>
+                <p>The <strong>SUBSCRIPTIONS</strong> entity specializes based on <code>plan_type</code>:</p>
+                <div class="eer-tree">
+<span class="super">SUBSCRIPTIONS</span> (Superclass)
+│
+├── discriminator: <span class="disc">plan_type</span>
+│
+├─── <span class="sub">FREE</span> <span class="attr-t">(billing_amount = 0, limited features)</span>
+│
+└─── <span class="sub">PREMIUM</span> <span class="attr-t">(billing_amount = ₹99/mo, unlimited chat, voice, reports, priority API)</span>
+                </div>
+            </div>
+
+            <div class="eer-card">
+                <h3>3. Specialization — ENVIRONMENTAL_ALERTS</h3>
+                <div class="eer-tree">
+<span class="super">ENVIRONMENTAL_ALERTS</span> (Superclass)
+│
+├── discriminator: <span class="disc">alert_type</span>
+│
+├─── <span class="sub">AQI_SPIKE</span> <span class="attr-t">(aqi_value, pm25, pm10, pollutant levels)</span>
+│
+├─── <span class="sub">HEATWAVE</span> <span class="attr-t">(temperature_celsius > 40°C, humidity)</span>
+│
+├─── <span class="sub">COLD_WAVE</span> <span class="attr-t">(temperature_celsius < 5°C)</span>
+│
+└─── <span class="sub">HEALTH_THRESHOLD</span> <span class="attr-t">(triggered by abnormal vitals, not environmental)</span>
+                </div>
+            </div>
+
+            <div class="eer-card">
+                <h3>4. Aggregation</h3>
+                <p>The relationship between <strong>USERS</strong>, <strong>CHAT_HISTORY</strong>, and <strong>API_USAGE</strong> forms an aggregation:</p>
+                <div class="eer-tree">
+<span class="super">USERS</span> ──── sends ──── <span class="super">CHAT_HISTORY</span>
+                                │
+                         aggregation of
+                                │
+                       <span class="sub">API_USAGE</span> <span class="attr-t">(tracks tokens, cost, model used per chat message)</span>
+                </div>
+                <p>Each chat message generates an API usage record via the <code>trg_log_chat_api_usage</code> trigger.</p>
+            </div>
+
+            <div class="eer-card">
+                <h3>5. Total vs Partial Participation</h3>
+                <ul>
+                    <li><strong>Total:</strong> USERS → USER_PREFERENCES (every user MUST have preferences)</li>
+                    <li><strong>Total:</strong> USERS → SUBSCRIPTIONS (every user MUST have a subscription, at minimum 'free')</li>
+                    <li><strong>Partial:</strong> USERS → ABDM_INTEGRATIONS (optional ABHA link)</li>
+                    <li><strong>Partial:</strong> USERS → MEDICAL_REPORTS (users MAY upload reports)</li>
+                    <li><strong>Partial:</strong> USERS → HEALTH_CONDITIONS (users MAY have conditions)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════ CARDINALITY ═══════════════ -->
+    <div id="tab-cardinality" class="diagram-container">
+        <div class="eer-section">
+            <div class="eer-card">
+                <h3>Entity Relationship Cardinality Table</h3>
+                <table class="cardinality-table">
+                    <thead>
+                        <tr>
+                            <th>Parent Entity</th>
+                            <th>Relationship</th>
+                            <th>Child Entity</th>
+                            <th>Cardinality</th>
+                            <th>Participation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>USERS</td><td>logs</td><td>HEALTH_RECORDS</td><td>1 : N</td><td>Partial</td></tr>
+                        <tr><td>USERS</td><td>sends</td><td>CHAT_HISTORY</td><td>1 : N</td><td>Partial</td></tr>
+                        <tr><td>USERS</td><td>uploads</td><td>MEDICAL_REPORTS</td><td>1 : N</td><td>Partial</td></tr>
+                        <tr><td>USERS</td><td>receives</td><td>ENVIRONMENTAL_ALERTS</td><td>1 : N</td><td>Partial</td></tr>
+                        <tr><td>USERS</td><td>has</td><td>HEALTH_CONDITIONS</td><td>1 : N</td><td>Partial</td></tr>
+                        <tr><td>USERS</td><td>configures</td><td>USER_PREFERENCES</td><td>1 : 1</td><td>Total</td></tr>
+                        <tr><td>USERS</td><td>authenticates</td><td>AUTH_SESSIONS</td><td>1 : N</td><td>Partial</td></tr>
+                        <tr><td>USERS</td><td>links</td><td>ABDM_INTEGRATIONS</td><td>1 : 0..1</td><td>Partial</td></tr>
+                        <tr><td>USERS</td><td>subscribes</td><td>SUBSCRIPTIONS</td><td>1 : N</td><td>Total</td></tr>
+                        <tr><td>USERS</td><td>generates</td><td>USER_ANALYTICS</td><td>1 : N</td><td>Partial</td></tr>
+                        <tr><td>USERS</td><td>consumes</td><td>API_USAGE</td><td>1 : N</td><td>Partial</td></tr>
+                        <tr><td>USERS</td><td>submits</td><td>USER_FEEDBACK</td><td>1 : N</td><td>Partial</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Tab switching ──
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.diagram-container').forEach(d => d.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            event.target.classList.add('active');
+            if (tab === 'er') drawLines();
+        }
+
+        // ── Entity definitions (13 tables, NO corporate) ──
+        const entities = [
+            {
+                id: 'users', name: 'USERS', x: 400, y: 20,
+                attrs: [
+                    { name: 'id', type: 'UUID', badge: 'PK' },
+                    { name: 'email', type: 'VARCHAR(255)', badge: 'UK' },
+                    { name: 'phone', type: 'VARCHAR(20)', badge: 'UK' },
+                    { name: 'password_hash', type: 'VARCHAR(255)' },
+                    { name: 'first_name', type: 'VARCHAR(100)' },
+                    { name: 'last_name', type: 'VARCHAR(100)' },
+                    { name: 'date_of_birth', type: 'DATE' },
+                    { name: 'gender', type: 'ENUM' },
+                    { name: 'preferred_language', type: 'VARCHAR(10)' },
+                    { name: 'preferred_city', type: 'VARCHAR(100)' },
+                    { name: 'subscription_plan', type: 'ENUM' },
+                    { name: 'is_active', type: 'BOOLEAN' },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                ]
+            },
+            {
+                id: 'health_records', name: 'HEALTH_RECORDS', x: 20, y: 20,
+                attrs: [
+                    { name: 'id', type: 'UUID', badge: 'PK' },
+                    { name: 'user_id', type: 'UUID', badge: 'FK' },
+                    { name: 'record_type', type: 'ENUM' },
+                    { name: 'bp_systolic', type: 'INT' },
+                    { name: 'bp_diastolic', type: 'INT' },
+                    { name: 'blood_sugar_fasting', type: 'INT' },
+                    { name: 'weight_kg', type: 'DECIMAL' },
+                    { name: 'symptom_description', type: 'TEXT' },
+                    { name: 'environmental_context', type: 'JSONB' },
+                    { name: 'recorded_at', type: 'TIMESTAMP' },
+                ]
+            },
+            {
+                id: 'chat_history', name: 'CHAT_HISTORY', x: 780, y: 20,
+                attrs: [
+                    { name: 'id', type: 'UUID', badge: 'PK' },
+                    { name: 'user_id', type: 'UUID', badge: 'FK' },
+                    { name: 'user_message', type: 'TEXT' },
+                    { name: 'ai_response', type: 'TEXT' },
+                    { name: 'model_used', type: 'VARCHAR(50)' },
+                    { name: 'tokens_used', type: 'INT' },
+                    { name: 'response_time_ms', type: 'INT' },
+                    { name: 'safety_check_passed', type: 'BOOLEAN' },
+                    { name: 'created_at', type: 'TIMESTAMP' },
+                ]
+            },
+            {
+                id: 'medical_reports', name: 'MEDICAL_REPORTS', x: 20, y: 350,
+                attrs: [
+                    { name: 'id', type: 'UUID', badge: 'PK' },
+                    { name: 'user_id', type: 'UUID', badge: 'FK' },
+                    { name: 'report_date', type: 'DATE' },
+                    { name: 'report_type', type: 'VARCHAR(50)' },
+                    { name: 'biomarkers', type: 'JSONB' },
+                    { name: 'interpretation', type: 'TEXT' },
+                    { name: 'abnormal_values', type: 'JSONB' },
+                    { name: 'ocr_confidence', type: 'DECIMAL' },
+                ]
+            },
+            {
+                id: 'environmental_alerts', name: 'ENVIRONMENTAL_ALERTS', x: 780, y: 350,
+                attrs: [
+                    { name: 'id', type: 'UUID', badge: 'PK' },
+                    { name: 'user_id', type: 'UUID', badge: 'FK' },
+                    { name: 'alert_type', type: 'ENUM' },
+                    { name: 'alert_severity', type: 'ENUM' },
+                    { name: 'aqi_value', type: 'INT' },
+                    { name: 'temperature', type: 'DECIMAL' },
+                    { name: 'alert_title', type: 'VARCHAR' },
+                    { name: 'alert_recommendation', type: 'TEXT' },
+                ]
+            },
+            {
+                id: 'health_conditions', name: 'HEALTH_CONDITIONS', x: 20, y: 630,
+                attrs: [
+                    { name: 'id', type: 'UUID', badge: 'PK' },
+                    { name: 'user_id', type: 'UUID', badge: 'FK' },
+                    { name: 'condition_name', type: 'VARCHAR(200)' },
+                    { name: 'condition_status', type: 'ENUM' },
+                    { name: 'severity_level', type: 'VARCHAR(20)' },
+                    { name: 'diagnosed_date', type: 'DATE' },
+                    { name: 'target_metrics', type: 'JSONB' },
+                ]
+            },
+            {
+                id: 'user_preferences', name: 'USER_PREFERENCES', x: 400, y: 470,
+                attrs: [
+                    { name: 'id', type: 'UUID', badge: 'PK' },
+                    { name: 'user_id', type: 'UUID', badge: 'FK' },
+                    { name: 'notifications_enabled', type: 'BOOLEAN' },
+                    { name: 'alert_aqi_threshold', type: 'INT' },
+                    { name: 'voice_input_enabled', type: 'BOOLEAN' },
+                    { name: 'voice_language', type: 'VARCHAR(10)' },
+                    { name: 'dark_mode', type: 'BOOLEAN' },
+                ]
+            },
+            {
+                id: 'auth_sessions', name: 'AUTH_SESSIONS', x: 780, y: 630,
+                attrs: [
+                    { name: 'id', type: 'UUID', badge: 'PK' },
+                    { name: 'user_id', type: 'UUID', badge: 'FK' },
+                    { name: 'access_token', type: 'VARCHAR' },
+                    { name: 'refresh_token', type: 'VARCHAR' },
+                    { name: 'device_type', type: 'VARCHAR' },
+                    { name: 'expires_at', type: 'TIMESTAMP' },
+                    { name: 'is_active', type: 'BOOLEAN' },
+                ]
+            },
+            {
+                id: 'abdm_integrations', name: 'ABDM_INTEGRATIONS', x: 20, y: 900,
+                attrs: [
+                    { name: 'id', type: 'UUID', badge: 'PK' },
+                    { name: 'user_id', type: 'UUID', badge: 'FK' },
+                    { name: 'abha_number', type: 'VARCHAR', badge: 'UK' },
+                    { name: 'consent_given', type: 'BOOLEAN' },
+                    { name: 'integration_status', type: 'VARCHAR' },
+                ]
+            },
+            {
+                id: 'subscriptions', name: 'SUBSCRIPTIONS', x: 400, y: 750,
+                attrs: [
+                    { name: 'id', type: 'UUID', badge: 'PK' },
+                    { name: 'user_id', type: 'UUID', badge: 'FK' },
+                    { name: 'plan_type', type: 'ENUM' },
+                    { name: 'billing_amount_inr', type: 'DECIMAL' },
+                    { name: 'billing_cycle', type: 'ENUM' },
+                    { name: 'subscription_end_date', type: 'TIMESTAMP' },
+                    { name: 'auto_renewal', type: 'BOOLEAN' },
+                ]
+            },
+            {
+                id: 'user_analytics', name: 'USER_ANALYTICS', x: 780, y: 900,
+                attrs: [
+                    { name: 'id', type: 'UUID', badge: 'PK' },
+                    { name: 'user_id', type: 'UUID', badge: 'FK' },
+                    { name: 'date', type: 'DATE' },
+                    { name: 'total_messages_sent', type: 'INT' },
+                    { name: 'session_count', type: 'INT' },
+                    { name: 'feature_usage', type: 'JSONB' },
+                ]
+            },
+            {
+                id: 'api_usage', name: 'API_USAGE', x: 400, y: 1040,
+                attrs: [
+                    { name: 'id', type: 'UUID', badge: 'PK' },
+                    { name: 'user_id', type: 'UUID', badge: 'FK' },
+                    { name: 'endpoint_path', type: 'VARCHAR' },
+                    { name: 'model_used', type: 'VARCHAR' },
+                    { name: 'input_tokens', type: 'INT' },
+                    { name: 'output_tokens', type: 'INT' },
+                    { name: 'estimated_cost_inr', type: 'DECIMAL' },
+                ]
+            },
+            {
+                id: 'user_feedback', name: 'USER_FEEDBACK', x: 20, y: 1140,
+                attrs: [
+                    { name: 'id', type: 'UUID', badge: 'PK' },
+                    { name: 'user_id', type: 'UUID', badge: 'FK' },
+                    { name: 'feedback_type', type: 'VARCHAR' },
+                    { name: 'overall_rating', type: 'INT (1-5)' },
+                    { name: 'feedback_description', type: 'TEXT' },
+                    { name: 'status', type: 'ENUM' },
+                ]
+            }
+        ];
+
+        // ── Relationships ──
+        const relationships = [
+            { from: 'users', to: 'health_records', label: 'logs (1:N)' },
+            { from: 'users', to: 'chat_history', label: 'sends (1:N)' },
+            { from: 'users', to: 'medical_reports', label: 'uploads (1:N)' },
+            { from: 'users', to: 'environmental_alerts', label: 'receives (1:N)' },
+            { from: 'users', to: 'health_conditions', label: 'has (1:N)' },
+            { from: 'users', to: 'user_preferences', label: 'configures (1:1)' },
+            { from: 'users', to: 'auth_sessions', label: 'authenticates (1:N)' },
+            { from: 'users', to: 'abdm_integrations', label: 'links (1:0..1)' },
+            { from: 'users', to: 'subscriptions', label: 'subscribes (1:N)' },
+            { from: 'users', to: 'user_analytics', label: 'generates (1:N)' },
+            { from: 'users', to: 'api_usage', label: 'consumes (1:N)' },
+            { from: 'users', to: 'user_feedback', label: 'submits (1:N)' },
+        ];
+
+        // ── Render entities ──
+        function renderEntities() {
+            const canvas = document.getElementById('erCanvas');
+
+            entities.forEach(ent => {
+                const el = document.createElement('div');
+                el.className = 'entity';
+                el.id = 'ent-' + ent.id;
+                el.style.left = ent.x + 'px';
+                el.style.top = ent.y + 'px';
+
+                let html = `<div class="entity-header">${ent.name}</div><div class="entity-body">`;
+                ent.attrs.forEach(a => {
+                    let badge = '';
+                    if (a.badge === 'PK') badge = `<span class="attr-badge badge-pk">PK</span>`;
+                    else if (a.badge === 'FK') badge = `<span class="attr-badge badge-fk">FK</span>`;
+                    else if (a.badge === 'UK') badge = `<span class="attr-badge badge-uk">UK</span>`;
+                    html += `<div class="attr">${badge}<span class="attr-name">${a.name}</span><span class="attr-type">${a.type}</span></div>`;
+                });
+                html += '</div>';
+                el.innerHTML = html;
+                canvas.appendChild(el);
+            });
+        }
+
+        // ── Draw relationship lines ──
+        function drawLines() {
+            const svg = document.getElementById('erLines');
+            svg.innerHTML = '';
+
+            const canvas = document.getElementById('erCanvas');
+            const canvasRect = canvas.getBoundingClientRect();
+
+            relationships.forEach(rel => {
+                const fromEl = document.getElementById('ent-' + rel.from);
+                const toEl = document.getElementById('ent-' + rel.to);
+                if (!fromEl || !toEl) return;
+
+                const fromRect = fromEl.getBoundingClientRect();
+                const toRect = toEl.getBoundingClientRect();
+
+                // Calculate center points relative to canvas
+                const fx = fromEl.offsetLeft + fromEl.offsetWidth / 2;
+                const fy = fromEl.offsetTop + fromEl.offsetHeight / 2;
+                const tx = toEl.offsetLeft + toEl.offsetWidth / 2;
+                const ty = toEl.offsetTop + toEl.offsetHeight / 2;
+
+                // Find edge connection points
+                const fromPt = getEdgePoint(fromEl, fx, fy, tx, ty);
+                const toPt = getEdgePoint(toEl, tx, ty, fx, fy);
+
+                // Draw curved line
+                const midX = (fromPt.x + toPt.x) / 2;
+                const midY = (fromPt.y + toPt.y) / 2;
+
+                const dx = toPt.x - fromPt.x;
+                const dy = toPt.y - fromPt.y;
+                const offset = Math.min(Math.abs(dx), Math.abs(dy)) * 0.3;
+                const cpx = midX + (dy > 0 ? offset : -offset) * 0.5;
+                const cpy = midY;
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', `M ${fromPt.x} ${fromPt.y} Q ${cpx} ${cpy} ${toPt.x} ${toPt.y}`);
+                path.setAttribute('class', 'rel-line');
+                svg.appendChild(path);
+
+                // Label
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', midX);
+                text.setAttribute('y', midY - 6);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('class', 'rel-text');
+                text.textContent = rel.label;
+                svg.appendChild(text);
+            });
+
+            // Update canvas height
+            let maxBottom = 0;
+            entities.forEach(ent => {
+                const el = document.getElementById('ent-' + ent.id);
+                if (el) maxBottom = Math.max(maxBottom, el.offsetTop + el.offsetHeight + 40);
+            });
+            canvas.style.minHeight = maxBottom + 'px';
+            svg.style.height = maxBottom + 'px';
+        }
+
+        function getEdgePoint(el, cx, cy, targetX, targetY) {
+            const w = el.offsetWidth / 2;
+            const h = el.offsetHeight / 2;
+            const dx = targetX - cx;
+            const dy = targetY - cy;
+
+            if (Math.abs(dx) * h > Math.abs(dy) * w) {
+                // Hit left or right edge
+                const side = dx > 0 ? 1 : -1;
+                return { x: cx + side * w, y: cy + (dy / Math.abs(dx)) * w };
+            } else {
+                // Hit top or bottom edge
+                const side = dy > 0 ? 1 : -1;
+                return { x: cx + (dx / Math.abs(dy)) * h, y: cy + side * h };
+            }
+        }
+
+        // ── Initialize ──
+        renderEntities();
+        setTimeout(drawLines, 100);
+        window.addEventListener('resize', drawLines);
+    </script>
+</body>
+</html>
