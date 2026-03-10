@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aarogya Sathi — Classic ER Diagram (Chen Notation)</title>
+    <!-- Use Vis-network for interactive physics-based graphs -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+        }
+        #header {
+            padding: 15px 30px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #header h1 { margin: 0; font-size: 1.5rem; }
+        #header p { margin: 5px 0 0 0; font-size: 0.9rem; color: #bdc3c7; }
+        #network {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0; left: 0;
+        }
+        .controls {
+            position: absolute;
+            bottom: 30px; left: 30px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        .legend-item { display: flex; align-items: center; margin-bottom: 8px; font-size: 0.9rem;}
+        .legend-color { width: 20px; height: 15px; margin-right: 10px; border: 1px solid #bdc3c7;}
+        button {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover { background: #2980b9; }
+    </style>
+</head>
+<body>
+
+    <div id="header">
+        <div>
+            <h1>Aarogya Sathi ER Diagram</h1>
+            <p>Classic Chen's Notation • Interactive Physics • B2C Model</p>
+        </div>
+    </div>
+
+    <div id="network"></div>
+
+    <div class="controls">
+        <strong>Legend</strong>
+        <div class="legend-item" style="margin-top: 10px;">
+            <div class="legend-color" style="background: #aed6f1;"></div> Entity (Rectangle)
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #a9dfbf;"></div> Relationship (Diamond)
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #fcf3cf; border-radius: 50%;"></div> Attribute (Oval)
+        </div>
+        <div class="legend-item">
+            <div style="margin-right: 10px;"><u>PK</u></div> Primary Key 
+        </div>
+        <button onclick="network.fit({animation: {duration: 1000}})">Center Diagram</button>
+    </div>
+
+    <script type="text/javascript">
+        // ── Data Definition ──
+        
+        const nodesData = [
+            /* =======================================================
+               ENTITIES (Box)
+               ======================================================= */
+            { id: 'E_USERS', label: 'USERS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_HEALTH', label: 'HEALTH\nRECORDS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_CHAT', label: 'CHAT\nHISTORY', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_REPORTS', label: 'MEDICAL\nREPORTS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_ENV', label: 'ENVIRONMENTAL\nALERTS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_CONDS', label: 'HEALTH\nCONDITIONS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_PREFS', label: 'USER\nPREFS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_AUTH', label: 'AUTH\nSESSIONS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_ABDM', label: 'ABDM\nLINKS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_SUBS', label: 'SUBSCRIPTIONS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_ANALYTICS', label: 'USER\nANALYTICS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_API', label: 'API\nUSAGE', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_FEEDBACK', label: 'USER\nFEEDBACK', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+
+            /* =======================================================
+               RELATIONSHIPS (Diamond)
+               ======================================================= */
+            { id: 'R_LOGS', label: 'LOGS', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
+            { id: 'R_SENDS', label: 'SENDS', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
+            { id: 'R_UPLOADS', label: 'UPLOADS', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
+            { id: 'R_RECEIVES', label: 'RECEIVES', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
+            { id: 'R_HAS', label: 'HAS', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
+            { id: 'R_CONFIGURES', label: 'CONFIGURES', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
+            { id: 'R_AUTHENTICATES', label: 'AUTHENTICATES', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
+            { id: 'R_LINKS', label: 'LINKS', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
+            { id: 'R_SUBSCRIBES', label: 'SUBSCRIBES', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
+            { id: 'R_GENERATES', label: 'GENERATES', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
+            { id: 'R_CONSUMES', label: 'CONSUMES', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
+            { id: 'R_SUBMITS', label: 'SUBMITS', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
+
+            /* =======================================================
+               ATTRIBUTES (Ellipse)
+               ======================================================= */
+            // USERS
+            { id: 'A_U_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
+            { id: 'A_U_EMAIL', label: 'email', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_U_PHONE', label: 'phone', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_U_FNAME', label: 'first_name', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_U_DOB', label: 'date_of_birth', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_U_CITY', label: 'preferred_city', shape: 'ellipse', color: '#fcf3cf' },
+
+            // HEALTH_RECORDS
+            { id: 'A_HR_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
+            { id: 'A_HR_TYPE', label: 'record_type', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_HR_BPS', label: 'bp_systolic', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_HR_BPD', label: 'bp_diastolic', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_HR_BSF', label: 'sugar_fasting', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_HR_DATE', label: 'recorded_at', shape: 'ellipse', color: '#fcf3cf' },
+
+            // CHAT_HISTORY
+            { id: 'A_CH_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
+            { id: 'A_CH_USER', label: 'user_message', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_CH_AI', label: 'ai_response', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_CH_TOK', label: 'tokens_used', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_CH_TIME', label: 'created_at', shape: 'ellipse', color: '#fcf3cf' },
+
+            // MEDICAL_REPORTS
+            { id: 'A_MR_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
+            { id: 'A_MR_DATE', label: 'report_date', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_MR_TYPE', label: 'report_type', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_MR_BIO', label: 'biomarkers', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_MR_OCR', label: 'ocr_confidence', shape: 'ellipse', color: '#fcf3cf' },
+
+            // ENVIRONMENTAL_ALERTS
+            { id: 'A_EA_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
+            { id: 'A_EA_TYPE', label: 'alert_type', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_EA_SEV', label: 'alert_severity', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_EA_AQI', label: 'aqi_value', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_EA_REC', label: 'recommendation', shape: 'ellipse', color: '#fcf3cf' },
+
+            // HEALTH_CONDITIONS
+            { id: 'A_HC_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
+            { id: 'A_HC_NAME', label: 'condition_name', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_HC_STAT', label: 'status', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_HC_SEV', label: 'severity_level', shape: 'ellipse', color: '#fcf3cf' },
+
+            // USER_PREFERENCES
+            { id: 'A_UP_NOTIF', label: 'notifications_enabled', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_UP_AQI', label: 'alert_aqi_threshold', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_UP_VOICE', label: 'voice_language', shape: 'ellipse', color: '#fcf3cf' },
+
+            // AUTH_SESSIONS
+            { id: 'A_AS_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
+            { id: 'A_AS_TOKEN', label: 'access_token', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_AS_DEV', label: 'device_type', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_AS_EXP', label: 'expires_at', shape: 'ellipse', color: '#fcf3cf' },
+
+            // ABDM_INTEGRATIONS
+            { id: 'A_AB_ABHA', label: 'abha_number', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_AB_CONS', label: 'consent_given', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_AB_STAT', label: 'integration_status', shape: 'ellipse', color: '#fcf3cf' },
+
+            // SUBSCRIPTIONS
+            { id: 'A_SU_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
+            { id: 'A_SU_PLAN', label: 'plan_type', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_SU_AMT', label: 'billing_amount', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_SU_END', label: 'end_date', shape: 'ellipse', color: '#fcf3cf' },
+
+            // USER_ANALYTICS  
+            { id: 'A_AN_DATE', label: 'date', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_AN_MSGS', label: 'total_messages', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_AN_SESS', label: 'session_count', shape: 'ellipse', color: '#fcf3cf' },
+
+            // API_USAGE
+            { id: 'A_AP_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
+            { id: 'A_AP_EP', label: 'endpoint', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_AP_MOD', label: 'model_used', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_AP_TOK', label: 'total_tokens', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_AP_COST', label: 'cost_inr', shape: 'ellipse', color: '#fcf3cf' },
+
+            // USER_FEEDBACK
+            { id: 'A_FB_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
+            { id: 'A_FB_RATE', label: 'overall_rating', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_FB_STAT', label: 'status', shape: 'ellipse', color: '#fcf3cf' }
+        ];
+
+        const edgesData = [
+            /* =======================================================
+               ENTITY -> RELATIONSHIP -> ENTITY
+               ======================================================= */
+            { from: 'E_USERS', to: 'R_LOGS', label: '1', font: {align: 'horizontal'} },     { from: 'R_LOGS', to: 'E_HEALTH', label: 'N', font: {align: 'horizontal'} },
+            { from: 'E_USERS', to: 'R_SENDS', label: '1', font: {align: 'horizontal'} },    { from: 'R_SENDS', to: 'E_CHAT', label: 'N', font: {align: 'horizontal'} },
+            { from: 'E_USERS', to: 'R_UPLOADS', label: '1', font: {align: 'horizontal'} },  { from: 'R_UPLOADS', to: 'E_REPORTS', label: 'N', font: {align: 'horizontal'} },
+            { from: 'E_USERS', to: 'R_RECEIVES', label: '1', font: {align: 'horizontal'} }, { from: 'R_RECEIVES', to: 'E_ENV', label: 'N', font: {align: 'horizontal'} },
+            { from: 'E_USERS', to: 'R_HAS', label: '1', font: {align: 'horizontal'} },      { from: 'R_HAS', to: 'E_CONDS', label: 'N', font: {align: 'horizontal'} },
+            { from: 'E_USERS', to: 'R_CONFIGURES', label: '1', font: {align: 'horizontal'} },{ from: 'R_CONFIGURES', to: 'E_PREFS', label: '1', font: {align: 'horizontal'} },
+            { from: 'E_USERS', to: 'R_AUTHENTICATES', label: '1', font: {align: 'horizontal'} },{ from: 'R_AUTHENTICATES', to: 'E_AUTH', label: 'N', font: {align: 'horizontal'} },
+            { from: 'E_USERS', to: 'R_LINKS', label: '1', font: {align: 'horizontal'} },    { from: 'R_LINKS', to: 'E_ABDM', label: '1', font: {align: 'horizontal'} },
+            { from: 'E_USERS', to: 'R_SUBSCRIBES', label: '1', font: {align: 'horizontal'} },{ from: 'R_SUBSCRIBES', to: 'E_SUBS', label: 'N', font: {align: 'horizontal'} },
+            { from: 'E_USERS', to: 'R_GENERATES', label: '1', font: {align: 'horizontal'} },{ from: 'R_GENERATES', to: 'E_ANALYTICS', label: 'N', font: {align: 'horizontal'} },
+            { from: 'E_USERS', to: 'R_CONSUMES', label: '1', font: {align: 'horizontal'} }, { from: 'R_CONSUMES', to: 'E_API', label: 'N', font: {align: 'horizontal'} },
+            { from: 'E_USERS', to: 'R_SUBMITS', label: '1', font: {align: 'horizontal'} },  { from: 'R_SUBMITS', to: 'E_FEEDBACK', label: 'N', font: {align: 'horizontal'} },
+
+            /* =======================================================
+               ENTITY -> ATTRIBUTES (Straight solid lines)
+               ======================================================= */
+            { from: 'E_USERS', to: 'A_U_ID' }, { from: 'E_USERS', to: 'A_U_EMAIL' }, { from: 'E_USERS', to: 'A_U_PHONE' }, { from: 'E_USERS', to: 'A_U_FNAME' }, { from: 'E_USERS', to: 'A_U_DOB' }, { from: 'E_USERS', to: 'A_U_CITY' },
+            
+            { from: 'E_HEALTH', to: 'A_HR_ID' }, { from: 'E_HEALTH', to: 'A_HR_TYPE' }, { from: 'E_HEALTH', to: 'A_HR_BPS' }, { from: 'E_HEALTH', to: 'A_HR_BPD' }, { from: 'E_HEALTH', to: 'A_HR_BSF' }, { from: 'E_HEALTH', to: 'A_HR_DATE' },
+            
+            { from: 'E_CHAT', to: 'A_CH_ID' }, { from: 'E_CHAT', to: 'A_CH_USER' }, { from: 'E_CHAT', to: 'A_CH_AI' }, { from: 'E_CHAT', to: 'A_CH_TOK' }, { from: 'E_CHAT', to: 'A_CH_TIME' },
+            
+            { from: 'E_REPORTS', to: 'A_MR_ID' }, { from: 'E_REPORTS', to: 'A_MR_DATE' }, { from: 'E_REPORTS', to: 'A_MR_TYPE' }, { from: 'E_REPORTS', to: 'A_MR_BIO' }, { from: 'E_REPORTS', to: 'A_MR_OCR' },
+            
+            { from: 'E_ENV', to: 'A_EA_ID' }, { from: 'E_ENV', to: 'A_EA_TYPE' }, { from: 'E_ENV', to: 'A_EA_SEV' }, { from: 'E_ENV', to: 'A_EA_AQI' }, { from: 'E_ENV', to: 'A_EA_REC' },
+            
+            { from: 'E_CONDS', to: 'A_HC_ID' }, { from: 'E_CONDS', to: 'A_HC_NAME' }, { from: 'E_CONDS', to: 'A_HC_STAT' }, { from: 'E_CONDS', to: 'A_HC_SEV' },
+            
+            { from: 'E_PREFS', to: 'A_UP_NOTIF' }, { from: 'E_PREFS', to: 'A_UP_AQI' }, { from: 'E_PREFS', to: 'A_UP_VOICE' },
+            
+            { from: 'E_AUTH', to: 'A_AS_ID' }, { from: 'E_AUTH', to: 'A_AS_TOKEN' }, { from: 'E_AUTH', to: 'A_AS_DEV' }, { from: 'E_AUTH', to: 'A_AS_EXP' },
+            
+            { from: 'E_ABDM', to: 'A_AB_ABHA' }, { from: 'E_ABDM', to: 'A_AB_CONS' }, { from: 'E_ABDM', to: 'A_AB_STAT' },
+            
+            { from: 'E_SUBS', to: 'A_SU_ID' }, { from: 'E_SUBS', to: 'A_SU_PLAN' }, { from: 'E_SUBS', to: 'A_SU_AMT' }, { from: 'E_SUBS', to: 'A_SU_END' },
+            
+            { from: 'E_ANALYTICS', to: 'A_AN_DATE' }, { from: 'E_ANALYTICS', to: 'A_AN_MSGS' }, { from: 'E_ANALYTICS', to: 'A_AN_SESS' },
+            
+            { from: 'E_API', to: 'A_AP_ID' }, { from: 'E_API', to: 'A_AP_EP' }, { from: 'E_API', to: 'A_AP_MOD' }, { from: 'E_API', to: 'A_AP_TOK' }, { from: 'E_API', to: 'A_AP_COST' },
+            
+            { from: 'E_FEEDBACK', to: 'A_FB_ID' }, { from: 'E_FEEDBACK', to: 'A_FB_RATE' }, { from: 'E_FEEDBACK', to: 'A_FB_STAT' }
+        ];
+
+        // ── Render ──
+        
+        var container = document.getElementById('network');
+        var data = {
+            nodes: new vis.DataSet(nodesData),
+            edges: new vis.DataSet(edgesData)
+        };
+        
+        var options = {
+            physics: {
+                forceAtlas2Based: {
+                    gravitationalConstant: -100,
+                    centralGravity: 0.015,
+                    springLength: 100,
+                    springConstant: 0.1,
+                    damping: 0.4
+                },
+                maxVelocity: 50,
+                minVelocity: 0.1,
+                solver: 'forceAtlas2Based',
+                stabilization: {
+                    iterations: 300,
+                    updateInterval: 50
+                }
+            },
+            edges: {
+                color: '#7f8c8d',
+                width: 2,
+                font: {
+                    size: 14,
+                    color: '#34495e',
+                    align: 'middle'
+                },
+                smooth: {
+                    type: 'continuous'
+                }
+            },
+            interaction: {
+                hover: true,
+                tooltipDelay: 200
+            }
+        };
+        
+        var network = new vis.Network(container, data, options);
+
+        // Center network when stabilization is done
+        network.once("stabilizationIterationsDone", function () {
+            network.fit({animation: {duration: 1000}});
+        });
+    </script>
+</body>
+</html>
