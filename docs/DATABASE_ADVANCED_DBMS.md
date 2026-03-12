@@ -1,9 +1,9 @@
 # AAROGYA SATHI — Advanced DBMS Document
 ## ER, EER, Relational Schema, PL/SQL, Triggers & Advanced Features
 
-**Version:** 3.1 (B2C Only) | **Date:** March 10, 2026 | **Database:** PostgreSQL 15+ | **Tables:** 13
+**Version:** 4.0 | **Date:** March 12, 2026 | **Database:** PostgreSQL 15+ | **Tables:** 18
 
-> 📌 **Visual ER Diagram:** Open [ER_DIAGRAM.html](ER_DIAGRAM.html) in a browser for the interactive version with all 13 entities, relationships, and EER specialization diagrams.
+> 📌 **Visual ER Diagram:** Open [CHEN_ER_DIAGRAM.html](CHEN_ER_DIAGRAM.html) or [EER_DIAGRAM.html](EER_DIAGRAM.html) in a browser for the interactive version with all 18 entities, relationships, and EER specialization diagrams.
 
 ---
 
@@ -29,7 +29,7 @@
 
 ## 1. ER Diagram
 
-### 1.1 Entities (13 Tables)
+### 1.1 Entities (18 Tables)
 
 | # | Entity | Primary Key | Description |
 |---|--------|-------------|-------------|
@@ -46,6 +46,11 @@
 | 11 | **USER_ANALYTICS** | `id` (UUID) | Daily usage metrics |
 | 12 | **API_USAGE** | `id` (UUID) | Per-request token/cost tracking |
 | 13 | **USER_FEEDBACK** | `id` (UUID) | App ratings and feedback |
+| 14 | **CORPORATE_ACCOUNTS** | `id` (UUID) | Employer wellness programs |
+| 15 | **CORPORATE_EMP_MAP** | `id` (UUID) | Maps users to corporate accounts |
+| 16 | **DAILY_STEPS** | `id` (UUID) | Virtual Nurse: Daily step logs |
+| 17 | **WORKOUTS** | `id` (UUID) | Virtual Nurse: Exercise tracking |
+| 18 | **REMINDERS** | `id` (UUID) | Virtual Nurse: Meds, Water, Meals |
 
 ### 1.2 ER Diagram (Mermaid)
 
@@ -63,6 +68,11 @@ erDiagram
     USERS ||--o{ USER_ANALYTICS : "generates"
     USERS ||--o{ API_USAGE : "consumes"
     USERS ||--o{ USER_FEEDBACK : "submits"
+    USERS ||--o| CORPORATE_EMP_MAP : "belongs"
+    CORPORATE_ACCOUNTS ||--o{ CORPORATE_EMP_MAP : "employs"
+    USERS ||--o{ DAILY_STEPS : "tracks"
+    USERS ||--o{ WORKOUTS : "tracks"
+    USERS ||--o{ REMINDERS : "schedules"
 
     USERS {
         UUID id PK
@@ -237,6 +247,41 @@ erDiagram
         ENUM status
         TIMESTAMP created_at
     }
+
+    CORPORATE_ACCOUNTS {
+        UUID id PK
+        VARCHAR company_name
+        VARCHAR domain_name UK
+        INT max_employees
+    }
+
+    DAILY_STEPS {
+        UUID id PK
+        UUID user_id FK
+        DATE log_date
+        INT step_count
+        INT distance_meters
+        TIMESTAMP updated_at
+    }
+
+    WORKOUTS {
+        UUID id PK
+        UUID user_id FK
+        VARCHAR workout_type
+        INT duration_mins
+        INT calories_burned
+        TIMESTAMP recorded_at
+    }
+
+    REMINDERS {
+        UUID id PK
+        UUID user_id FK
+        ENUM reminder_type
+        TIME time_scheduled
+        BOOLEAN is_active
+        VARCHAR meta_data
+        TIMESTAMP created_at
+    }
 ```
 
 ### 1.3 Relationship Summary
@@ -255,6 +300,11 @@ erDiagram
 | USERS | generates | USER_ANALYTICS | 1:N | Partial |
 | USERS | consumes | API_USAGE | 1:N | Partial |
 | USERS | submits | USER_FEEDBACK | 1:N | Partial |
+| USERS | belongs | CORPORATE_EMP_MAP | 1:0..1 | Partial |
+| CORP_ACCOUNTS | employs | CORPORATE_EMP_MAP | 1:N | Partial |
+| USERS | tracks | DAILY_STEPS | 1:N | Partial |
+| USERS | tracks | WORKOUTS | 1:N | Partial |
+| USERS | schedules | REMINDERS | 1:N | Partial |
 
 ---
 
@@ -340,6 +390,28 @@ erDiagram
     │pm25,pm10 │ │humidity  │  │             │ │abnormal vitals  │
     │pollutants│ │          │  │             │ │(not env data)   │
     └──────────┘ └──────────┘  └─────────────┘ └─────────────────┘
+
+### 2.4 Specialization — REMINDERS (Virtual Nurse)
+
+**Type:** Disjoint, Total Specialization via `reminder_type`
+
+```
+                    ┌─────────────────┐
+                    │   REMINDERS     │
+                    │   (Superclass)  │
+                    └────────┬────────┘
+                             │
+                  discriminator: reminder_type
+                             │
+          ┌──────────┬───────┴───────┐
+          │          │               │
+    ┌─────▼────┐ ┌───▼──────┐ ┌──────▼─────┐
+    │ MED_REM  │ │ WATER_REM│ │ MEAL_REM   │
+    │          │ │          │ │            │
+    │med_name  │ │volume_ml │ │meal_type   │
+    │dosage    │ │interval  │ │(e.g break) │
+    └──────────┘ └──────────┘ └────────────┘
+```
 ```
 
 ### 2.4 Aggregation — Chat + API Usage
@@ -416,6 +488,7 @@ CREATE TYPE alert_severity_level AS ENUM ('low', 'moderate', 'high', 'critical')
 CREATE TYPE condition_status_enum AS ENUM ('active', 'controlled', 'managed', 'resolved');
 CREATE TYPE feedback_status AS ENUM ('open', 'in_progress', 'resolved', 'closed');
 CREATE TYPE billing_cycle_type AS ENUM ('monthly', 'yearly');
+CREATE TYPE reminder_category AS ENUM ('medication', 'water', 'meal', 'custom');
 
 -- ═══ Domains with Constraints ═══
 CREATE DOMAIN email_domain AS VARCHAR(255)
@@ -665,6 +738,29 @@ BEGIN
     RAISE NOTICE 'Downgraded % subscriptions', v_count;
 END;
 $$;
+
+### 5.6 Evaluate Daily Step Goal (sp_evaluate_step_goal)
+
+```sql
+CREATE OR REPLACE PROCEDURE sp_evaluate_step_goal(p_user_id UUID, p_date DATE)
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_steps INT;
+    v_goal INT := 10000; -- Default goal, could be fetched from prefs
+BEGIN
+    SELECT step_count INTO v_steps FROM daily_steps 
+    WHERE user_id = p_user_id AND log_date = p_date;
+    
+    IF v_steps >= v_goal THEN
+        -- Insert a motivational chat message from the AI directly into History
+        INSERT INTO chat_history (user_id, user_message, ai_response, model_used, tokens_used)
+        VALUES (p_user_id, 'SYSTEM_EVENT: STEP_GOAL_REACHED', 
+                'Great job! You reached your 10,000 step goal for today. Keep it up!', 
+                'system', 0);
+    END IF;
+END;
+$$;
+```
 ```
 
 ---
@@ -1053,6 +1149,25 @@ CREATE TRIGGER trg_emergency_alert
     AFTER INSERT ON chat_history
     FOR EACH ROW WHEN (NEW.contained_emergency_keywords = true)
     EXECUTE FUNCTION trg_fn_emergency_alert();
+```
+
+### 8.7 Virtual Nurse Daily Summary Generation (trg_daily_summary_check)
+
+```sql
+CREATE OR REPLACE FUNCTION trg_fn_daily_summary_check()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- If user surpasses 10k steps, auto-call the procedure
+    IF NEW.step_count >= 10000 AND OLD.step_count < 10000 THEN
+        CALL sp_evaluate_step_goal(NEW.user_id, NEW.log_date);
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_daily_step_check
+    AFTER UPDATE ON daily_steps
+    FOR EACH ROW EXECUTE FUNCTION trg_fn_daily_summary_check();
 ```
 
 ---

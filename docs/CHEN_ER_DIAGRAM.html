@@ -80,12 +80,24 @@
             <div class="legend-color" style="background: #fcf3cf; border-radius: 50%;"></div> Attribute (Oval)
         </div>
         <div class="legend-item">
+            <div class="legend-color" style="background: #fcf3cf; border-radius: 50%; border-style: dashed;"></div> Derived Attribute (Dashed)
+        </div>
+        <div class="legend-item">
             <div style="margin-right: 10px;"><u>PK</u></div> Primary Key 
         </div>
         <button onclick="network.fit({animation: {duration: 1000}})">Center Diagram</button>
     </div>
 
     <script type="text/javascript">
+        // Helper to generate SVG data URIs for relationship diamonds with centered text
+        function createDiamondSvg(text) {
+            const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="140" height="70">' +
+                '<polygon points="70,2 138,35 70,68 2,35" fill="#a9dfbf" stroke="#7f8c8d" stroke-width="2"/>' +
+                '<text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="14" fill="#34495e">' + text + '</text>' +
+            '</svg>';
+            return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+        }
+
         // ── Data Definition ──
         
         const nodesData = [
@@ -93,144 +105,204 @@
                ENTITIES (Box)
                ======================================================= */
             { id: 'E_USERS', label: 'USERS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
-            { id: 'E_HEALTH', label: 'HEALTH\nRECORDS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
-            { id: 'E_CHAT', label: 'CHAT\nHISTORY', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
-            { id: 'E_REPORTS', label: 'MEDICAL\nREPORTS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
-            { id: 'E_ENV', label: 'ENVIRONMENTAL\nALERTS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
-            { id: 'E_CONDS', label: 'HEALTH\nCONDITIONS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
-            { id: 'E_PREFS', label: 'USER\nPREFS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
-            { id: 'E_AUTH', label: 'AUTH\nSESSIONS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
-            { id: 'E_ABDM', label: 'ABDM\nLINKS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_HEALTH', label: 'HEALTH RECORDS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_CHAT', label: 'CHAT HISTORY', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_REPORTS', label: 'MEDICAL REPORTS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_ENV', label: 'ENVIRONMENTAL ALERTS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_CONDS', label: 'HEALTH CONDITIONS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_PREFS', label: 'USER PREFERENCES', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_AUTH', label: 'AUTH SESSIONS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
             { id: 'E_SUBS', label: 'SUBSCRIPTIONS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
-            { id: 'E_ANALYTICS', label: 'USER\nANALYTICS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
-            { id: 'E_API', label: 'API\nUSAGE', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
-            { id: 'E_FEEDBACK', label: 'USER\nFEEDBACK', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_ANALYTICS', label: 'USER ANALYTICS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_API', label: 'API USAGE', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_FEEDBACK', label: 'USER FEEDBACK', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            
+            // Missing PRD Entities
+            { id: 'E_ABDM', label: 'ABDM INTEGRATIONS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_CORP', label: 'CORPORATE ACCOUNTS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_CORP_MAP', label: 'EMP MAPPING', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            
+            // Virtual Nurse Trackers & Reminders
+            { id: 'E_STEPS', label: 'DAILY STEPS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_WORK', label: 'WORKOUTS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
+            { id: 'E_REMIN', label: 'REMINDERS', shape: 'box', color: '#aed6f1', font: {size: 18, bold: true} },
 
             /* =======================================================
                RELATIONSHIPS (Diamond)
                ======================================================= */
-            { id: 'R_LOGS', label: 'LOGS', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
-            { id: 'R_SENDS', label: 'SENDS', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
-            { id: 'R_UPLOADS', label: 'UPLOADS', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
-            { id: 'R_RECEIVES', label: 'RECEIVES', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
-            { id: 'R_HAS', label: 'HAS', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
-            { id: 'R_CONFIGURES', label: 'CONFIGURES', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
-            { id: 'R_AUTHENTICATES', label: 'AUTHENTICATES', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
-            { id: 'R_LINKS', label: 'LINKS', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
-            { id: 'R_SUBSCRIBES', label: 'SUBSCRIBES', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
-            { id: 'R_GENERATES', label: 'GENERATES', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
-            { id: 'R_CONSUMES', label: 'CONSUMES', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
-            { id: 'R_SUBMITS', label: 'SUBMITS', shape: 'diamond', color: '#a9dfbf', font: {size: 16} },
+            { id: 'R_RECORDS', shape: 'image', image: createDiamondSvg('RECORDS'), size: 50 },
+            { id: 'R_SENDS', shape: 'image', image: createDiamondSvg('SENDS'), size: 50 },
+            { id: 'R_PROVIDES', shape: 'image', image: createDiamondSvg('PROVIDES'), size: 50 },
+            { id: 'R_RECEIVES', shape: 'image', image: createDiamondSvg('RECEIVES'), size: 50 },
+            { id: 'R_HAS', shape: 'image', image: createDiamondSvg('HAS'), size: 50 },
+            { id: 'R_SETS', shape: 'image', image: createDiamondSvg('SETS'), size: 50 },
+            { id: 'R_AUTHENTICATES', shape: 'image', image: createDiamondSvg('AUTHENTICATES'), size: 50 },
+            { id: 'R_SUBSCRIBES', shape: 'image', image: createDiamondSvg('SUBSCRIBES'), size: 50 },
+            { id: 'R_GENERATES', shape: 'image', image: createDiamondSvg('GENERATES'), size: 50 },
+            { id: 'R_LINKS', shape: 'image', image: createDiamondSvg('LINKS'), size: 50 },
+            { id: 'R_EMPLOYS', shape: 'image', image: createDiamondSvg('EMPLOYS'), size: 50 },
+            { id: 'R_BELONGS', shape: 'image', image: createDiamondSvg('BELONGS TO'), size: 50 },
+            { id: 'R_TRACKS_S', shape: 'image', image: createDiamondSvg('TRACKS'), size: 50 },
+            { id: 'R_TRACKS_W', shape: 'image', image: createDiamondSvg('TRACKS'), size: 50 },
+            { id: 'R_SCHEDULES', shape: 'image', image: createDiamondSvg('SCHEDULES'), size: 50 },
+            
+            // New Inter-entity relationship diamonds
+            { id: 'R_EXTRACTS', shape: 'image', image: createDiamondSvg('EXTRACTS'), size: 50 }, // Reports -> Records
+            { id: 'R_INDICATES', shape: 'image', image: createDiamondSvg('INDICATES'), size: 50 }, // Records -> Conditions
+            { id: 'R_CONTEXT', shape: 'image', image: createDiamondSvg('USES CONTEXT'), size: 50 }, // Chat -> Env
+            { id: 'R_COMSUMES_TOKENS', shape: 'image', image: createDiamondSvg('CONSUMES'), size: 50 }, // Chat -> API_Usage
+            { id: 'R_RATES', shape: 'image', image: createDiamondSvg('RATES'), size: 50 }, // Feedback -> Chat
 
             /* =======================================================
                ATTRIBUTES (Ellipse)
                ======================================================= */
             // USERS
-            { id: 'A_U_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
-            { id: 'A_U_EMAIL', label: 'email', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_U_PHONE', label: 'phone', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_U_FNAME', label: 'first_name', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_U_DOB', label: 'date_of_birth', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_U_CITY', label: 'preferred_city', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_U_ID', label: 'user_id', shape: 'ellipse', color: '#ffdeaa', font: {decoration: 'underline'} },
+            { id: 'A_U_EMAIL', label: 'email', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_U_PHONE', label: 'phone', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_U_NAME', label: 'name', shape: 'ellipse', color: '#ffdeaa' }, // Composite Attribute Root
+            { id: 'A_U_FNAME', label: 'first_name', shape: 'ellipse', color: '#ffdeaa' }, // Component
+            { id: 'A_U_LNAME', label: 'last_name', shape: 'ellipse', color: '#ffdeaa' }, // Component
+            { id: 'A_U_DOB', label: 'date_of_birth', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_U_AGE', label: 'age', shape: 'ellipse', color: '#ffdeaa', dashes: true }, // Derived Attribute
+            { id: 'A_U_CITY', label: 'preferred_city', shape: 'ellipse', color: '#ffdeaa' },
 
-            // HEALTH_RECORDS
-            { id: 'A_HR_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
-            { id: 'A_HR_TYPE', label: 'record_type', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_HR_BPS', label: 'bp_systolic', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_HR_BPD', label: 'bp_diastolic', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_HR_BSF', label: 'sugar_fasting', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_HR_DATE', label: 'recorded_at', shape: 'ellipse', color: '#fcf3cf' },
+            // HEALTH_RECORDS (Added missing PRD lifestyle attributes)
+            { id: 'A_HR_ID', label: 'record_id', shape: 'ellipse', color: '#ffdeaa', font: {decoration: 'underline'} },
+            { id: 'A_HR_TYPE', label: 'record_type', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_HR_BP', label: 'blood_pressure', shape: 'ellipse', color: '#ffdeaa' }, // Composite Root
+            { id: 'A_HR_BPS', label: 'bp_systolic', shape: 'ellipse', color: '#ffdeaa' }, // Component
+            { id: 'A_HR_BPD', label: 'bp_diastolic', shape: 'ellipse', color: '#ffdeaa' }, // Component
+            { id: 'A_HR_BSF', label: 'sugar_fasting', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_HR_SLEEP', label: 'sleep_hours', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_HR_EXE', label: 'exercise_mins', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_HR_WATER', label: 'water_intake', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_HR_STRESS', label: 'stress_level', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_HR_DATE', label: 'recorded_at', shape: 'ellipse', color: '#ffdeaa' },
 
             // CHAT_HISTORY
-            { id: 'A_CH_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
-            { id: 'A_CH_USER', label: 'user_message', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_CH_AI', label: 'ai_response', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_CH_TOK', label: 'tokens_used', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_CH_TIME', label: 'created_at', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_CH_ID', label: 'chat_id', shape: 'ellipse', color: '#ffdeaa', font: {decoration: 'underline'} },
+            { id: 'A_CH_USER', label: 'user_message', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_CH_AI', label: 'ai_response', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_CH_TOK', label: 'tokens_used', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_CH_TIME', label: 'timestamp', shape: 'ellipse', color: '#ffdeaa' },
 
             // MEDICAL_REPORTS
-            { id: 'A_MR_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
-            { id: 'A_MR_DATE', label: 'report_date', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_MR_TYPE', label: 'report_type', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_MR_BIO', label: 'biomarkers', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_MR_OCR', label: 'ocr_confidence', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_MR_ID', label: 'report_id', shape: 'ellipse', color: '#ffdeaa', font: {decoration: 'underline'} },
+            { id: 'A_MR_DATE', label: 'report_date', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_MR_TYPE', label: 'report_type', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_MR_BIO', label: 'biomarkers', shape: 'ellipse', color: '#ffdeaa' }, // Abstracted JSON
+            { id: 'A_MR_OCR', label: 'ocr_confidence', shape: 'ellipse', color: '#ffdeaa' },
 
             // ENVIRONMENTAL_ALERTS
-            { id: 'A_EA_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
-            { id: 'A_EA_TYPE', label: 'alert_type', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_EA_SEV', label: 'alert_severity', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_EA_AQI', label: 'aqi_value', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_EA_REC', label: 'recommendation', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_EA_ID', label: 'alert_id', shape: 'ellipse', color: '#ffdeaa', font: {decoration: 'underline'} },
+            { id: 'A_EA_TYPE', label: 'alert_type', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_EA_SEV', label: 'severity', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_EA_AQI', label: 'aqi_value', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_EA_REC', label: 'recommendation', shape: 'ellipse', color: '#ffdeaa' },
 
             // HEALTH_CONDITIONS
-            { id: 'A_HC_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
-            { id: 'A_HC_NAME', label: 'condition_name', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_HC_STAT', label: 'status', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_HC_SEV', label: 'severity_level', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_HC_ID', label: 'condition_id', shape: 'ellipse', color: '#ffdeaa', font: {decoration: 'underline'} },
+            { id: 'A_HC_NAME', label: 'condition_name', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_HC_STAT', label: 'status', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_HC_SEV', label: 'severity_level', shape: 'ellipse', color: '#ffdeaa' },
 
             // USER_PREFERENCES
-            { id: 'A_UP_NOTIF', label: 'notifications_enabled', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_UP_AQI', label: 'alert_aqi_threshold', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_UP_VOICE', label: 'voice_language', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_UP_NOTIF', label: 'notifications_enabled', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_UP_AQI', label: 'alert_aqi_threshold', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_UP_VOICE', label: 'voice_language', shape: 'ellipse', color: '#ffdeaa' },
 
             // AUTH_SESSIONS
-            { id: 'A_AS_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
-            { id: 'A_AS_TOKEN', label: 'access_token', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_AS_DEV', label: 'device_type', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_AS_EXP', label: 'expires_at', shape: 'ellipse', color: '#fcf3cf' },
-
-            // ABDM_INTEGRATIONS
-            { id: 'A_AB_ABHA', label: 'abha_number', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_AB_CONS', label: 'consent_given', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_AB_STAT', label: 'integration_status', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_AS_ID', label: 'session_id', shape: 'ellipse', color: '#ffdeaa', font: {decoration: 'underline'} },
+            { id: 'A_AS_TOKEN', label: 'access_token', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_AS_DEV', label: 'device_type', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_AS_EXP', label: 'expires_at', shape: 'ellipse', color: '#ffdeaa' },
 
             // SUBSCRIPTIONS
-            { id: 'A_SU_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
-            { id: 'A_SU_PLAN', label: 'plan_type', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_SU_AMT', label: 'billing_amount', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_SU_END', label: 'end_date', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_SU_ID', label: 'subscription_id', shape: 'ellipse', color: '#ffdeaa', font: {decoration: 'underline'} },
+            { id: 'A_SU_PLAN', label: 'plan_type', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_SU_AMT', label: 'billing_amount', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_SU_END', label: 'end_date', shape: 'ellipse', color: '#ffdeaa' },
 
             // USER_ANALYTICS  
-            { id: 'A_AN_DATE', label: 'date', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_AN_MSGS', label: 'total_messages', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_AN_SESS', label: 'session_count', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_AN_DATE', label: 'date', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_AN_MSGS', label: 'total_messages', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_AN_SESS', label: 'session_count', shape: 'ellipse', color: '#ffdeaa' },
 
             // API_USAGE
-            { id: 'A_AP_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
-            { id: 'A_AP_EP', label: 'endpoint', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_AP_MOD', label: 'model_used', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_AP_TOK', label: 'total_tokens', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_AP_COST', label: 'cost_inr', shape: 'ellipse', color: '#fcf3cf' },
+            { id: 'A_AP_ID', label: 'usage_id', shape: 'ellipse', color: '#ffdeaa', font: {decoration: 'underline'} },
+            { id: 'A_AP_EP', label: 'endpoint', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_AP_MOD', label: 'model_used', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_AP_TOK', label: 'tokens_used', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_AP_COST', label: 'estimated_cost', shape: 'ellipse', color: '#ffdeaa' },
 
             // USER_FEEDBACK
-            { id: 'A_FB_ID', label: 'id', shape: 'ellipse', color: '#fcf3cf', font: {decoration: 'underline'} },
-            { id: 'A_FB_RATE', label: 'overall_rating', shape: 'ellipse', color: '#fcf3cf' },
-            { id: 'A_FB_STAT', label: 'status', shape: 'ellipse', color: '#fcf3cf' }
+            { id: 'A_FB_ID', label: 'feedback_id', shape: 'ellipse', color: '#ffdeaa', font: {decoration: 'underline'} },
+            { id: 'A_FB_RATE', label: 'rating', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_FB_STAT', label: 'status', shape: 'ellipse', color: '#ffdeaa' },
+
+            // ABDM INTEGRATIONS
+            { id: 'A_AB_ID', label: 'integration_id', shape: 'ellipse', color: '#ffdeaa', font: {decoration: 'underline'} },
+            { id: 'A_AB_ABHA', label: 'abha_number', shape: 'ellipse', color: '#ffdeaa' },
+            
+            // CORPORATE ACCOUNTS
+            { id: 'A_CA_ID', label: 'corp_id', shape: 'ellipse', color: '#ffdeaa', font: {decoration: 'underline'} },
+            { id: 'A_CA_NAME', label: 'company_name', shape: 'ellipse', color: '#ffdeaa' },
+
+            // DAILY STEPS
+            { id: 'A_ST_ID', label: 'log_id', shape: 'ellipse', color: '#ffdeaa', font: {decoration: 'underline'} },
+            { id: 'A_ST_CNT', label: 'step_count', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_ST_DAT', label: 'date', shape: 'ellipse', color: '#ffdeaa' },
+
+            // WORKOUTS
+            { id: 'A_WO_ID', label: 'workout_id', shape: 'ellipse', color: '#ffdeaa', font: {decoration: 'underline'} },
+            { id: 'A_WO_TYP', label: 'workout_type', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_WO_DUR', label: 'duration_mins', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_WO_CAL', label: 'calories', shape: 'ellipse', color: '#ffdeaa' },
+
+            // REMINDERS
+            { id: 'A_RM_ID', label: 'reminder_id', shape: 'ellipse', color: '#ffdeaa', font: {decoration: 'underline'} },
+            { id: 'A_RM_TYP', label: 'reminder_type', shape: 'ellipse', color: '#ffdeaa' },
+            { id: 'A_RM_TIME', label: 'time_scheduled', shape: 'ellipse', color: '#ffdeaa' }
         ];
 
         const edgesData = [
             /* =======================================================
                ENTITY -> RELATIONSHIP -> ENTITY
                ======================================================= */
-            { from: 'E_USERS', to: 'R_LOGS', label: '1', font: {align: 'horizontal'} },     { from: 'R_LOGS', to: 'E_HEALTH', label: 'N', font: {align: 'horizontal'} },
-            { from: 'E_USERS', to: 'R_SENDS', label: '1', font: {align: 'horizontal'} },    { from: 'R_SENDS', to: 'E_CHAT', label: 'N', font: {align: 'horizontal'} },
-            { from: 'E_USERS', to: 'R_UPLOADS', label: '1', font: {align: 'horizontal'} },  { from: 'R_UPLOADS', to: 'E_REPORTS', label: 'N', font: {align: 'horizontal'} },
-            { from: 'E_USERS', to: 'R_RECEIVES', label: '1', font: {align: 'horizontal'} }, { from: 'R_RECEIVES', to: 'E_ENV', label: 'N', font: {align: 'horizontal'} },
-            { from: 'E_USERS', to: 'R_HAS', label: '1', font: {align: 'horizontal'} },      { from: 'R_HAS', to: 'E_CONDS', label: 'N', font: {align: 'horizontal'} },
-            { from: 'E_USERS', to: 'R_CONFIGURES', label: '1', font: {align: 'horizontal'} },{ from: 'R_CONFIGURES', to: 'E_PREFS', label: '1', font: {align: 'horizontal'} },
-            { from: 'E_USERS', to: 'R_AUTHENTICATES', label: '1', font: {align: 'horizontal'} },{ from: 'R_AUTHENTICATES', to: 'E_AUTH', label: 'N', font: {align: 'horizontal'} },
-            { from: 'E_USERS', to: 'R_LINKS', label: '1', font: {align: 'horizontal'} },    { from: 'R_LINKS', to: 'E_ABDM', label: '1', font: {align: 'horizontal'} },
-            { from: 'E_USERS', to: 'R_SUBSCRIBES', label: '1', font: {align: 'horizontal'} },{ from: 'R_SUBSCRIBES', to: 'E_SUBS', label: 'N', font: {align: 'horizontal'} },
-            { from: 'E_USERS', to: 'R_GENERATES', label: '1', font: {align: 'horizontal'} },{ from: 'R_GENERATES', to: 'E_ANALYTICS', label: 'N', font: {align: 'horizontal'} },
-            { from: 'E_USERS', to: 'R_CONSUMES', label: '1', font: {align: 'horizontal'} }, { from: 'R_CONSUMES', to: 'E_API', label: 'N', font: {align: 'horizontal'} },
-            { from: 'E_USERS', to: 'R_SUBMITS', label: '1', font: {align: 'horizontal'} },  { from: 'R_SUBMITS', to: 'E_FEEDBACK', label: 'N', font: {align: 'horizontal'} },
+            // User to core entities
+            { from: 'E_USERS', to: 'R_RECORDS', label: '1', font: {align: 'horizontal'} },     { from: 'R_RECORDS', to: 'E_HEALTH', label: 'N', font: {align: 'horizontal'}, arrows: 'to' },
+            { from: 'E_USERS', to: 'R_SENDS', label: '1', font: {align: 'horizontal'} },    { from: 'R_SENDS', to: 'E_CHAT', label: 'N', font: {align: 'horizontal'}, arrows: 'to' },
+            { from: 'E_USERS', to: 'R_PROVIDES', label: '1', font: {align: 'horizontal'} },  { from: 'R_PROVIDES', to: 'E_REPORTS', label: 'N', font: {align: 'horizontal'}, arrows: 'to' },
+            { from: 'E_USERS', to: 'R_RECEIVES', label: '1', font: {align: 'horizontal'} }, { from: 'R_RECEIVES', to: 'E_ENV', label: 'N', font: {align: 'horizontal'}, arrows: 'to' },
+            { from: 'E_USERS', to: 'R_HAS', label: '1', font: {align: 'horizontal'} },      { from: 'R_HAS', to: 'E_CONDS', label: 'N', font: {align: 'horizontal'}, arrows: 'to' },
+            { from: 'E_USERS', to: 'R_SETS', label: '1', font: {align: 'horizontal'} },{ from: 'R_SETS', to: 'E_PREFS', label: '1', font: {align: 'horizontal'}, arrows: 'to' },
+            { from: 'E_USERS', to: 'R_AUTHENTICATES', label: '1', font: {align: 'horizontal'} },{ from: 'R_AUTHENTICATES', to: 'E_AUTH', label: 'N', font: {align: 'horizontal'}, arrows: 'to' },
+            { from: 'E_USERS', to: 'R_SUBSCRIBES', label: '1', font: {align: 'horizontal'} },{ from: 'R_SUBSCRIBES', to: 'E_SUBS', label: 'N', font: {align: 'horizontal'}, arrows: 'to' },
+            { from: 'E_USERS', to: 'R_GENERATES', label: '1', font: {align: 'horizontal'} },{ from: 'R_GENERATES', to: 'E_ANALYTICS', label: '1', font: {align: 'horizontal'}, arrows: 'to' },
+            { from: 'E_USERS', to: 'R_LINKS', label: '1', font: {align: 'horizontal'} },{ from: 'R_LINKS', to: 'E_ABDM', label: '1', font: {align: 'horizontal'}, arrows: 'to' },
+            
+            // Trackers & Reminders relationships
+            { from: 'E_USERS', to: 'R_TRACKS_S', label: '1', font: {align: 'horizontal'} },{ from: 'R_TRACKS_S', to: 'E_STEPS', label: 'N', font: {align: 'horizontal'}, arrows: 'to' },
+            { from: 'E_USERS', to: 'R_TRACKS_W', label: '1', font: {align: 'horizontal'} },{ from: 'R_TRACKS_W', to: 'E_WORK', label: 'N', font: {align: 'horizontal'}, arrows: 'to' },
+            { from: 'E_USERS', to: 'R_SCHEDULES', label: '1', font: {align: 'horizontal'} },{ from: 'R_SCHEDULES', to: 'E_REMIN', label: 'N', font: {align: 'horizontal'}, arrows: 'to' },
+
+            // Inter-Entity Relationships
+            { from: 'E_CORP', to: 'R_EMPLOYS', label: '1', font: {align: 'horizontal'} },{ from: 'R_EMPLOYS', to: 'E_CORP_MAP', label: 'N', font: {align: 'horizontal'}, arrows: 'to' },
+            { from: 'E_USERS', to: 'R_BELONGS', label: '1', font: {align: 'horizontal'} },{ from: 'R_BELONGS', to: 'E_CORP_MAP', label: '1', font: {align: 'horizontal'}, arrows: 'to' },
+            
+            { from: 'E_REPORTS', to: 'R_EXTRACTS', label: '1', font: {align: 'horizontal'} }, { from: 'R_EXTRACTS', to: 'E_HEALTH', label: 'N', font: {align: 'horizontal'}, arrows: 'to' },
+            { from: 'E_HEALTH', to: 'R_INDICATES', label: '1', font: {align: 'horizontal'} }, { from: 'R_INDICATES', to: 'E_CONDS', label: 'N', font: {align: 'horizontal'}, arrows: 'to' },
+            { from: 'E_CHAT', to: 'R_CONTEXT', label: '1', font: {align: 'horizontal'} }, { from: 'R_CONTEXT', to: 'E_ENV', label: 'N', font: {align: 'horizontal'}, arrows: 'to' },
+            { from: 'E_CHAT', to: 'R_COMSUMES_TOKENS', label: '1', font: {align: 'horizontal'} }, { from: 'R_COMSUMES_TOKENS', to: 'E_API', label: '1', font: {align: 'horizontal'}, arrows: 'to' },
+            { from: 'E_FEEDBACK', to: 'R_RATES', label: '1', font: {align: 'horizontal'} }, { from: 'R_RATES', to: 'E_CHAT', label: '1', font: {align: 'horizontal'}, arrows: 'to' },
 
             /* =======================================================
                ENTITY -> ATTRIBUTES (Straight solid lines)
                ======================================================= */
-            { from: 'E_USERS', to: 'A_U_ID' }, { from: 'E_USERS', to: 'A_U_EMAIL' }, { from: 'E_USERS', to: 'A_U_PHONE' }, { from: 'E_USERS', to: 'A_U_FNAME' }, { from: 'E_USERS', to: 'A_U_DOB' }, { from: 'E_USERS', to: 'A_U_CITY' },
+            { from: 'E_USERS', to: 'A_U_ID' }, { from: 'E_USERS', to: 'A_U_EMAIL' }, { from: 'E_USERS', to: 'A_U_PHONE' }, { from: 'E_USERS', to: 'A_U_NAME' }, { from: 'A_U_NAME', to: 'A_U_FNAME' }, { from: 'A_U_NAME', to: 'A_U_LNAME' }, { from: 'E_USERS', to: 'A_U_DOB' }, { from: 'E_USERS', to: 'A_U_AGE' }, { from: 'E_USERS', to: 'A_U_CITY' },
             
-            { from: 'E_HEALTH', to: 'A_HR_ID' }, { from: 'E_HEALTH', to: 'A_HR_TYPE' }, { from: 'E_HEALTH', to: 'A_HR_BPS' }, { from: 'E_HEALTH', to: 'A_HR_BPD' }, { from: 'E_HEALTH', to: 'A_HR_BSF' }, { from: 'E_HEALTH', to: 'A_HR_DATE' },
+            { from: 'E_HEALTH', to: 'A_HR_ID' }, { from: 'E_HEALTH', to: 'A_HR_TYPE' }, { from: 'E_HEALTH', to: 'A_HR_BP' }, { from: 'A_HR_BP', to: 'A_HR_BPS' }, { from: 'A_HR_BP', to: 'A_HR_BPD' }, { from: 'E_HEALTH', to: 'A_HR_BSF' }, { from: 'E_HEALTH', to: 'A_HR_SLEEP' }, { from: 'E_HEALTH', to: 'A_HR_EXE' }, { from: 'E_HEALTH', to: 'A_HR_WATER' }, { from: 'E_HEALTH', to: 'A_HR_STRESS' }, { from: 'E_HEALTH', to: 'A_HR_DATE' },
             
             { from: 'E_CHAT', to: 'A_CH_ID' }, { from: 'E_CHAT', to: 'A_CH_USER' }, { from: 'E_CHAT', to: 'A_CH_AI' }, { from: 'E_CHAT', to: 'A_CH_TOK' }, { from: 'E_CHAT', to: 'A_CH_TIME' },
             
@@ -244,15 +316,23 @@
             
             { from: 'E_AUTH', to: 'A_AS_ID' }, { from: 'E_AUTH', to: 'A_AS_TOKEN' }, { from: 'E_AUTH', to: 'A_AS_DEV' }, { from: 'E_AUTH', to: 'A_AS_EXP' },
             
-            { from: 'E_ABDM', to: 'A_AB_ABHA' }, { from: 'E_ABDM', to: 'A_AB_CONS' }, { from: 'E_ABDM', to: 'A_AB_STAT' },
-            
             { from: 'E_SUBS', to: 'A_SU_ID' }, { from: 'E_SUBS', to: 'A_SU_PLAN' }, { from: 'E_SUBS', to: 'A_SU_AMT' }, { from: 'E_SUBS', to: 'A_SU_END' },
             
             { from: 'E_ANALYTICS', to: 'A_AN_DATE' }, { from: 'E_ANALYTICS', to: 'A_AN_MSGS' }, { from: 'E_ANALYTICS', to: 'A_AN_SESS' },
             
             { from: 'E_API', to: 'A_AP_ID' }, { from: 'E_API', to: 'A_AP_EP' }, { from: 'E_API', to: 'A_AP_MOD' }, { from: 'E_API', to: 'A_AP_TOK' }, { from: 'E_API', to: 'A_AP_COST' },
             
-            { from: 'E_FEEDBACK', to: 'A_FB_ID' }, { from: 'E_FEEDBACK', to: 'A_FB_RATE' }, { from: 'E_FEEDBACK', to: 'A_FB_STAT' }
+            { from: 'E_FEEDBACK', to: 'A_FB_ID' }, { from: 'E_FEEDBACK', to: 'A_FB_RATE' }, { from: 'E_FEEDBACK', to: 'A_FB_STAT' },
+
+            { from: 'E_ABDM', to: 'A_AB_ID' }, { from: 'E_ABDM', to: 'A_AB_ABHA' },
+            
+            { from: 'E_CORP', to: 'A_CA_ID' }, { from: 'E_CORP', to: 'A_CA_NAME' },
+
+            { from: 'E_STEPS', to: 'A_ST_ID' }, { from: 'E_STEPS', to: 'A_ST_CNT' }, { from: 'E_STEPS', to: 'A_ST_DAT' },
+
+            { from: 'E_WORK', to: 'A_WO_ID' }, { from: 'E_WORK', to: 'A_WO_TYP' }, { from: 'E_WORK', to: 'A_WO_DUR' }, { from: 'E_WORK', to: 'A_WO_CAL' },
+
+            { from: 'E_REMIN', to: 'A_RM_ID' }, { from: 'E_REMIN', to: 'A_RM_TYP' }, { from: 'E_REMIN', to: 'A_RM_TIME' }
         ];
 
         // ── Render ──
@@ -265,19 +345,19 @@
         
         var options = {
             physics: {
-                forceAtlas2Based: {
-                    gravitationalConstant: -100,
-                    centralGravity: 0.015,
-                    springLength: 100,
-                    springConstant: 0.1,
-                    damping: 0.4
+                solver: 'repulsion',
+                repulsion: {
+                    nodeDistance: 450, // Keep entities very far apart for clarity
+                    centralGravity: 0.0,
+                    springLength: 120, // Give attributes room to breathe
+                    springConstant: 0.05
                 },
                 maxVelocity: 50,
                 minVelocity: 0.1,
-                solver: 'forceAtlas2Based',
                 stabilization: {
-                    iterations: 300,
-                    updateInterval: 50
+                    enabled: true,
+                    iterations: 2000,
+                    updateInterval: 100
                 }
             },
             edges: {
@@ -288,9 +368,7 @@
                     color: '#34495e',
                     align: 'middle'
                 },
-                smooth: {
-                    type: 'continuous'
-                }
+                smooth: false
             },
             interaction: {
                 hover: true,
@@ -300,8 +378,9 @@
         
         var network = new vis.Network(container, data, options);
 
-        // Center network when stabilization is done
+        // Stop physics after initial load to make the diagram static and draggable
         network.once("stabilizationIterationsDone", function () {
+            network.setOptions({ physics: false });
             network.fit({animation: {duration: 1000}});
         });
     </script>
