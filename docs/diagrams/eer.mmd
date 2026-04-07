@@ -1,0 +1,32 @@
+classDiagram
+    class HEALTH_RECORDS {
+        uuid id
+        uuid user_id
+        timestamp recorded_at
+        enums record_type
+    }
+    class VITALS {
+        int bp_systolic
+        int bp_diastolic
+        int heart_rate
+        int blood_sugar_fasting
+    }
+    class SYMPTOMS {
+        string symptom_description
+        int severity_level
+        string triggers
+    }
+    class LIFESTYLE {
+        decimal sleep_hours
+        int exercise_minutes
+        string stress_level
+    }
+    class MEDICATION {
+        jsonb medications_taken
+        string adherence_status
+    }
+    
+    HEALTH_RECORDS <|-- VITALS
+    HEALTH_RECORDS <|-- SYMPTOMS
+    HEALTH_RECORDS <|-- LIFESTYLE
+    HEALTH_RECORDS <|-- MEDICATION

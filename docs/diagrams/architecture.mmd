@@ -1,0 +1,35 @@
+graph TD
+    subgraph Client [Client Facing Apps]
+        Mobile(Flutter Android/iOS)
+        LocalDB[(SQLite Local)]
+        Mobile --- LocalDB
+    end
+
+    subgraph Backend [Backend API]
+        API[FastAPI Server]
+        Cache[(Redis Cache)]
+        API --- Cache
+    end
+
+    subgraph Database [PostgreSQL 15+]
+        Users[(Users & Auth)]
+        Medical[(Medical Telemetry)]
+        VirtualNurse[(Virtual Nurse Logs)]
+        Analytics[(System Analytics)]
+    end
+
+    subgraph AI [External Services]
+        Gemini[Google Gemini 2.0]
+        Vision[Google Cloud Vision OCR]
+        Enviro[WAQI AQI / Weather]
+    end
+
+    Mobile -->|REST API HTTPS| API
+    API -->|Read/Write| Users
+    API -->|Read/Write| Medical
+    API -->|Read/Write| VirtualNurse
+    API -->|Read/Write| Analytics
+
+    API -->|Agent Prompts| Gemini
+    API -->|Upload Reports| Vision
+    API -->|Fetch Status| Enviro

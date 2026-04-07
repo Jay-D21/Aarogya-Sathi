@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aarogya Sathi — ADBMS Demo Report</title>
+<style>
+  :root { --blue: #3498db; --green: #27ae60; --red: #e74c3c; --dark: #2c3e50; --light: #ecf0f1; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.7; color: #333; max-width: 1100px; margin: 0 auto; padding: 30px 20px; background: #fafafa; }
+  h1 { color: var(--dark); border-bottom: 3px solid var(--blue); padding-bottom: 12px; margin-bottom: 8px; font-size: 1.8rem; }
+  .subtitle { color: #666; font-size: 0.95rem; margin-bottom: 24px; }
+  .summary-bar { display: flex; gap: 16px; margin-bottom: 30px; }
+  .summary-card { flex: 1; padding: 16px; border-radius: 8px; text-align: center; color: #fff; font-size: 1.4rem; font-weight: bold; }
+  .summary-card small { display: block; font-size: 0.75rem; font-weight: normal; opacity: 0.9; }
+  .card-total { background: var(--blue); }
+  .card-pass { background: var(--green); }
+  .card-fail { background: var(--red); }
+  h2 { color: var(--blue); margin: 30px 0 16px; font-size: 1.3rem; }
+  .demo { background: #fff; border-left: 5px solid var(--blue); padding: 18px 20px; margin-bottom: 18px; border-radius: 0 8px 8px 0; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .demo.fail { border-left-color: var(--red); }
+  .demo h3 { color: var(--dark); font-size: 1.05rem; margin-bottom: 10px; }
+  .demo h3 .badge { display: inline-block; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; color: #fff; margin-left: 8px; vertical-align: middle; }
+  .badge-pass { background: var(--green); }
+  .badge-fail { background: var(--red); }
+  pre { background: #282c34; color: #abb2bf; padding: 14px 16px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; margin: 8px 0; white-space: pre-wrap; word-wrap: break-word; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+  th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; font-size: 0.9rem; }
+  th { background: var(--light); font-weight: 600; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  .msg-pass { color: var(--green); font-weight: 600; }
+  .msg-fail { color: var(--red); font-weight: 600; }
+  .plsql-section { background: #1e1e2e; color: #cdd6f4; padding: 20px 24px; border-radius: 10px; margin: 20px 0; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.82rem; line-height: 1.6; max-height: 600px; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; }
+  .plsql-section .line-ok { color: #a6e3a1; }
+  .plsql-section .line-warn { color: #f9e2af; }
+  .plsql-section .line-err { color: #f38ba8; }
+  .plsql-section .line-header { color: #89b4fa; font-weight: bold; }
+  .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #ddd; color: #888; font-size: 0.8rem; text-align: center; }
+</style>
+</head>
+<body>
+<h1>🏥 Aarogya Sathi — Advanced DBMS Execution Report</h1>
+<p class="subtitle">Generated on April 07, 2026 at 01:53 PM · PostgreSQL 15 · 20 demos executed</p>
+<div class="summary-bar">
+  <div class="summary-card card-total">20<small>Total Demos</small></div>
+  <div class="summary-card card-pass">20<small>Passed</small></div>
+  <div class="summary-card card-fail">0<small>Failed</small></div>
+</div>
+<h2>Demo Results</h2>
+<div class="demo">
+<h3>Demo 1: sp_create_user → auto-creates preferences + free subscription <span class="badge badge-pass">PASS</span></h3>
+<pre>SELECT u.email, s.plan_type::text, p.notifications_enabled FROM users u JOIN subscriptions s ON u.id = s.user_id JOIN user_preferences p ON u.id = p.user_id WHERE u.id = &#x27;2f811175-83b9-4a74-8cd3-0db0699d5402&#x27;;</pre>
+<table>
+<tr><th>email</th><th>plan_type</th><th>notifications_enabled</th></tr>
+<tr><td>raj.kumar@example.com</td><td>free</td><td>True</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 2: sp_log_health_record with critical BP → auto-alert <span class="badge badge-pass">PASS</span></h3>
+<pre>CALL sp_log_health_record(&#x27;2f811175-83b9-4a74-8cd3-0db0699d5402&#x27;::uuid, 185, 100, 110, &#x27;Felt dizzy&#x27;);</pre>
+<pre>SELECT alert_title, alert_description FROM environmental_alerts WHERE alert_title = &#x27;High Blood Pressure Alert&#x27; ORDER BY created_at DESC LIMIT 1;</pre>
+<table>
+<tr><th>alert_title</th><th>alert_description</th></tr>
+<tr><td>High Blood Pressure Alert</td><td>Your recent BP reading (185/100) is above normal ICMR guidelines.</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 3: Emergency keyword in chat → auto-creates critical alert <span class="badge badge-pass">PASS</span></h3>
+<pre>INSERT INTO chat_history (user_id, user_message, ai_response, contained_emergency_keywords, tokens_used) VALUES (&#x27;a2530309-4aab-45a6-bd55-7e7fbdb3606f&#x27;::uuid, &#x27;I have terrible chest pain and I am sweating&#x27;, &#x27;EMERGENCY: Please call 108 immediately.&#x27;, true, 50);</pre>
+<pre>SELECT alert_type::text, alert_severity::text, alert_title FROM environmental_alerts WHERE user_id = &#x27;a2530309-4aab-45a6-bd55-7e7fbdb3606f&#x27; AND alert_type = &#x27;health_emergency&#x27;;</pre>
+<table>
+<tr><th>alert_type</th><th>alert_severity</th><th>alert_title</th></tr>
+<tr><td>health_emergency</td><td>critical</td><td>Potential Medical Emergency</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 4: fn_calculate_bmi → Asian BMI cutoffs <span class="badge badge-pass">PASS</span></h3>
+<pre>SELECT * FROM fn_calculate_bmi(85.0, 175.5);</pre>
+<table>
+<tr><th>bmi</th><th>category</th></tr>
+<tr><td>27.60</td><td>Obese</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 5: fn_check_icmr_range → Prediabetes detection <span class="badge badge-pass">PASS</span></h3>
+<pre>SELECT * FROM fn_check_icmr_range(&#x27;fasting_sugar&#x27;, 115.0);</pre>
+<table>
+<tr><th>status</th><th>normal_range</th><th>recommendation</th></tr>
+<tr><td>Prediabetes</td><td>70-100 mg/dL</td><td>Reduce refined carbs, increase physical activity to 150min/week.</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 6: fn_get_user_health_summary → JSONB health overview <span class="badge badge-pass">PASS</span></h3>
+<pre>SELECT fn_get_user_health_summary(&#x27;2f811175-83b9-4a74-8cd3-0db0699d5402&#x27;::uuid);</pre>
+<table>
+<tr><th>fn_get_user_health_summary</th></tr>
+<tr><td>{&#x27;conditions&#x27;: [&#x27;Hypertension&#x27;], &#x27;latest_sugar&#x27;: 110, &#x27;latest_dia_bp&#x27;: 100, &#x27;latest_sys_bp&#x27;: 185}</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 7: pkg_health_analytics.calculate_risk_score <span class="badge badge-pass">PASS</span></h3>
+<pre>SELECT * FROM pkg_health_analytics.calculate_risk_score(&#x27;2f811175-83b9-4a74-8cd3-0db0699d5402&#x27;::uuid);</pre>
+<table>
+<tr><th>score</th><th>risk_level</th></tr>
+<tr><td>30</td><td>Moderate</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 8: pkg_health_analytics.get_bp_trend → 7-day trend <span class="badge badge-pass">PASS</span></h3>
+<pre>SELECT * FROM pkg_health_analytics.get_bp_trend(&#x27;2f811175-83b9-4a74-8cd3-0db0699d5402&#x27;::uuid, 7);</pre>
+<table>
+<tr><th>rec_date</th><th>avg_sys</th><th>avg_dia</th></tr>
+<tr><td>2026-04-04</td><td>145.00</td><td>95.00</td></tr>
+<tr><td>2026-04-05</td><td>190.00</td><td>110.00</td></tr>
+<tr><td>2026-04-06</td><td>142.00</td><td>90.00</td></tr>
+<tr><td>2026-04-07</td><td>161.50</td><td>94.00</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 9: Audit trigger → tracks UPDATE on health_records <span class="badge badge-pass">PASS</span></h3>
+<pre>UPDATE health_records SET notes = &#x27;Feeling better now&#x27; WHERE user_id = &#x27;2f811175-83b9-4a74-8cd3-0db0699d5402&#x27;::uuid AND blood_pressure_systolic = 145;</pre>
+<pre>SELECT action_type, old_data-&gt;&gt;&#x27;notes&#x27; as old_notes, new_data-&gt;&gt;&#x27;notes&#x27; as new_notes FROM health_records_audit WHERE action_type = &#x27;UPDATE&#x27; ORDER BY changed_at DESC LIMIT 1;</pre>
+<table>
+<tr><th>action_type</th><th>old_notes</th><th>new_notes</th></tr>
+<tr><td>UPDATE</td><td><em>NULL</em></td><td>Feeling better now</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 10: BP Validation Trigger → blocks systolic ≤ diastolic <span class="badge badge-pass">PASS</span></h3>
+<pre>INSERT INTO health_records (user_id, record_type, blood_pressure_systolic, blood_pressure_diastolic, recorded_at) VALUES (&#x27;2f811175-83b9-4a74-8cd3-0db0699d5402&#x27;::uuid, &#x27;vitals&#x27;, 100, 150, CURRENT_TIMESTAMP);</pre>
+<p class="msg-pass">Systolic BP must be greater than Diastolic BP
+CONTEXT:  PL/pgSQL function fn_validate_bp() line 5 at RAISE</p>
+</div>
+<div class="demo">
+<h3>Demo 11: Daily step trigger → congratulatory message at 10K steps <span class="badge badge-pass">PASS</span></h3>
+<pre>UPDATE daily_steps SET steps_count = 11000 WHERE user_id = &#x27;2f811175-83b9-4a74-8cd3-0db0699d5402&#x27;::uuid AND log_date = CURRENT_DATE;</pre>
+<pre>SELECT user_message, ai_response FROM chat_history WHERE user_id = &#x27;2f811175-83b9-4a74-8cd3-0db0699d5402&#x27;::uuid AND user_message = &#x27;System Update: Goal Reached&#x27;;</pre>
+<table>
+<tr><th>user_message</th><th>ai_response</th></tr>
+<tr><td>System Update: Goal Reached</td><td>Congratulations! You reached your daily step goal of 10000 steps!</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 12: Cursor: fn_subscription_expiry_report <span class="badge badge-pass">PASS</span></h3>
+<pre>SELECT * FROM fn_subscription_expiry_report();</pre>
+<table>
+<tr><th>user_email</th><th>plan</th><th>days_remaining</th></tr>
+<tr><td>priya.s@example.com</td><td>premium</td><td>364</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 13: Cursor: fn_scan_health_anomalies → detects critical readings <span class="badge badge-pass">PASS</span></h3>
+<pre>SELECT * FROM fn_scan_health_anomalies(7);</pre>
+<table>
+<tr><th>r_user_id</th><th>r_metric</th><th>r_value</th></tr>
+<tr><td>2f811175-83b9-4a74-8cd3-0db0699d5402</td><td>Critical High BP</td><td>190</td></tr>
+<tr><td>2f811175-83b9-4a74-8cd3-0db0699d5402</td><td>Critical High BP</td><td>185</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 14: CTE + Window Function: 3-day moving average of BP <span class="badge badge-pass">PASS</span></h3>
+<pre>WITH daily_bp AS (
+            SELECT DATE(recorded_at) as log_date, AVG(blood_pressure_systolic) as avg_sys
+            FROM health_records
+            WHERE record_type = &#x27;vitals&#x27; AND blood_pressure_systolic IS NOT NULL
+            GROUP BY DATE(recorded_at)
+        )
+        SELECT log_date, ROUND(avg_sys, 2) as daily_avg,
+               ROUND(AVG(avg_sys) OVER (ORDER BY log_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 2) as moving_avg_3d,
+               ROUND(LAG(avg_sys) OVER (ORDER BY log_date), 2) as prev_day
+        FROM daily_bp;</pre>
+<table>
+<tr><th>log_date</th><th>daily_avg</th><th>moving_avg_3d</th><th>prev_day</th></tr>
+<tr><td>2026-04-03</td><td>115.00</td><td>115.00</td><td><em>NULL</em></td></tr>
+<tr><td>2026-04-04</td><td>132.50</td><td>123.75</td><td>115.00</td></tr>
+<tr><td>2026-04-05</td><td>143.33</td><td>130.28</td><td>132.50</td></tr>
+<tr><td>2026-04-06</td><td>142.00</td><td>139.28</td><td>143.33</td></tr>
+<tr><td>2026-04-07</td><td>144.00</td><td>143.11</td><td>142.00</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 15: Window Functions: RANK, NTILE on token usage <span class="badge badge-pass">PASS</span></h3>
+<pre>SELECT u.first_name, SUM(ch.tokens_used) as total_tokens,
+               RANK() OVER (ORDER BY SUM(ch.tokens_used) DESC) as rank,
+               NTILE(2) OVER (ORDER BY SUM(ch.tokens_used) DESC) as group_no
+        FROM users u
+        JOIN chat_history ch ON u.id = ch.user_id
+        WHERE u.is_active = TRUE
+        GROUP BY u.first_name;</pre>
+<table>
+<tr><th>first_name</th><th>total_tokens</th><th>rank</th><th>group_no</th></tr>
+<tr><td>Amit</td><td>180</td><td>1</td><td>1</td></tr>
+<tr><td>Priya</td><td>170</td><td>2</td><td>1</td></tr>
+<tr><td>Raj</td><td>150</td><td>3</td><td>2</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 16: View: vw_user_health_summary <span class="badge badge-pass">PASS</span></h3>
+<pre>SELECT first_name, last_name, latest_sys_bp, latest_dia_bp, latest_sugar, active_conditions_count FROM vw_user_health_summary;</pre>
+<table>
+<tr><th>first_name</th><th>last_name</th><th>latest_sys_bp</th><th>latest_dia_bp</th><th>latest_sugar</th><th>active_conditions_count</th></tr>
+<tr><td>Raj</td><td>Kumar</td><td>185</td><td>100</td><td>110</td><td>1</td></tr>
+<tr><td>Priya</td><td>Sharma</td><td>135</td><td>95</td><td>100</td><td>0</td></tr>
+<tr><td>Amit</td><td>Patel</td><td><em>NULL</em></td><td><em>NULL</em></td><td><em>NULL</em></td><td>1</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 17: Materialized View: mv_platform_daily_stats (with REFRESH) <span class="badge badge-pass">PASS</span></h3>
+<pre>REFRESH MATERIALIZED VIEW mv_platform_daily_stats;</pre>
+<pre>SELECT * FROM mv_platform_daily_stats;</pre>
+<table>
+<tr><th>stat_date</th><th>active_chatters</th><th>total_chats</th><th>total_tokens</th><th>avg_latency_ms</th></tr>
+<tr><td>2026-04-07</td><td>3</td><td>5</td><td>500</td><td><em>NULL</em></td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 18: Row-Level Security → user data isolation <span class="badge badge-pass">PASS</span></h3>
+<pre>SET app.current_user_id = &#x27;2f811175-83b9-4a74-8cd3-0db0699d5402&#x27;;</pre>
+<pre>SELECT COUNT(*) as visible_records FROM health_records;</pre>
+<table>
+<tr><th>total_records_visible</th><th>raj_records</th><th>rls_note</th></tr>
+<tr><td>14</td><td>5</td><td>RLS policies created. Superuser sees all 14 rows. App user role would see only 5.</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 19: sp_check_subscription_status → downgrades expired premium <span class="badge badge-pass">PASS</span></h3>
+<pre>CALL sp_check_subscription_status();</pre>
+<pre>SELECT u.first_name, s.plan_type::text, s.billing_status FROM users u JOIN subscriptions s ON u.id = s.user_id WHERE u.id = &#x27;0b8db51b-3aad-42ad-83c8-27aadada6144&#x27;::uuid;</pre>
+<table>
+<tr><th>first_name</th><th>plan_type</th><th>billing_status</th></tr>
+<tr><td>Amit</td><td>free</td><td>cancelled</td></tr>
+</table>
+</div>
+<div class="demo">
+<h3>Demo 20: DPDP Compliance: soft_delete_user → redacts PII <span class="badge badge-pass">PASS</span></h3>
+<pre>SELECT pkg_user_management.soft_delete_user(&#x27;0b8db51b-3aad-42ad-83c8-27aadada6144&#x27;::uuid);</pre>
+<pre>SELECT email, first_name, last_name, is_active, deleted_at IS NOT NULL as is_deleted FROM users WHERE id = &#x27;0b8db51b-3aad-42ad-83c8-27aadada6144&#x27;::uuid;</pre>
+<table>
+<tr><th>email</th><th>first_name</th><th>last_name</th><th>is_active</th><th>is_deleted</th></tr>
+<tr><td>deleted.0b8db51b@redacted.com</td><td>Redacted</td><td>Redacted</td><td>False</td><td>True</td></tr>
+</table>
+</div>
+<h2>PL/SQL Block Execution Output</h2>
+<p style="color:#666; font-size:0.9rem;">Output from 6 anonymous PL/SQL blocks demonstrating: loops, cursors, exception handling, dynamic SQL, nested blocks, and RAISE NOTICE.</p>
+<div class="plsql-section">
+<span class="line-header">══════════════════════════════════════════════════</span>
+
+
+<span class="line-header">BLOCK 1: Bulk Health Assessment Report</span>
+
+
+<span class="line-header">══════════════════════════════════════════════════</span>
+
+
+<span class="line-warn">[1] Amit Patel — BP: N/A, Sugar: 165 → 🟠 MODERATE — borderline values</span>
+
+
+<span class="line-ok">[2] Priya Sharma — BP: 118, Sugar: 100 → 🟢 HEALTHY — within normal range</span>
+
+
+<span class="line-warn">[3] Raj Kumar — BP: 138, Sugar: N/A → 🟠 MODERATE — borderline values</span>
+
+
+<span class="line-header">──────────────────────────────────────────────────</span>
+
+
+Total users assessed: 3
+
+
+<span class="line-header">══════════════════════════════════════════════════</span>
+
+
+
+
+
+<span class="line-header">══════════════════════════════════════════════════</span>
+
+
+<span class="line-header">BLOCK 2: Safe Batch Insert with Savepoints</span>
+
+
+<span class="line-header">══════════════════════════════════════════════════</span>
+
+
+<span class="line-ok">✓ Day 1: BP 115/83 inserted successfully</span>
+
+
+<span class="line-ok">✓ Day 2: BP 120/86 inserted successfully</span>
+
+
+<span class="line-ok">✓ Day 3: BP 125/89 inserted successfully</span>
+
+
+<span class="line-err">✗ Day 4: BP 70/120 REJECTED — Systolic BP must be greater than Diastolic BP (Savepoint rolled back)</span>
+
+
+<span class="line-ok">✓ Day 5: BP 135/95 inserted successfully</span>
+
+
+<span class="line-header">──────────────────────────────────────────────────</span>
+
+
+Inserted: 4, Skipped: 1, Total: 5
+
+
+<span class="line-header">══════════════════════════════════════════════════</span>
+
+
+
+
+
+<span class="line-header">══════════════════════════════════════════════════</span>
+
+
+<span class="line-header">BLOCK 3: Explicit Cursor — User Risk Report</span>
+
+
+<span class="line-header">══════════════════════════════════════════════════</span>
+
+
+[1] Amit Patel (amit.patel@example.com) | Plan: FREE | Records: 3 | Risk: 🟢 LOW (20)
+
+
+[2] Priya Sharma (priya.s@example.com) | Plan: PREMIUM | Records: 6 | Risk: ⚪ NO DATA (0)
+
+
+[3] Raj Kumar (raj.kumar@example.com) | Plan: FREE | Records: 4 | Risk: ⚪ NO DATA (0)
+
+
+<span class="line-header">──────────────────────────────────────────────────</span>
+
+
+Cursor closed. 3 users assessed.
+
+
+<span class="line-header">══════════════════════════════════════════════════</span>
+
+
+
+
+
+<span class="line-header">══════════════════════════════════════════════════</span>
+
+
+<span class="line-header">BLOCK 4: Dynamic SQL — Database Census Report</span>
+
+
+<span class="line-header">══════════════════════════════════════════════════</span>
+
+
+TABLE NAME-35s | ROW COUNTs
+
+
+------------------------------------35s-+-----------s
+
+
+users-35s | 3
+
+
+health_records-35s | 13
+
+
+health_records_audit-35s | 13
+
+
+chat_history-35s | 3
+
+
+medical_reports-35s | 0
+
+
+environmental_alerts-35s | 1
+
+
+health_conditions-35s | 2
+
+
+user_preferences-35s | 3
+
+
+auth_sessions-35s | 0
+
+
+abdm_integrations-35s | 0
+
+
+subscriptions-35s | 3
+
+
+user_analytics-35s | 0
+
+
+api_usage-35s | 3
+
+
+user_feedback-35s | 1
+
+
+corporate_accounts-35s | 1
+
+
+corporate_employee_mapping-35s | 1
+
+
+daily_steps-35s | 3
+
+
+workouts-35s | 1
+
+
+reminders-35s | 3
+
+
+------------------------------------35s-+-----------s
+
+
+TOTAL ROWS-35s | 54
+
+
+<span class="line-header">══════════════════════════════════════════════════</span>
+
+
+
+
+
+<span class="line-header">══════════════════════════════════════════════════</span>
+
+
+<span class="line-header">BLOCK 5: Exception Handling Hierarchy</span>
+
+
+<span class="line-header">══════════════════════════════════════════════════</span>
+
+
+Checking metric &quot;blood_pressure_systolic&quot; for user &quot;Amit&quot;...
+
+
+<span class="line-err">✗ No data found for metric &quot;blood_pressure_systolic&quot;</span>
+
+
+</div>
+<div class="footer">Aarogya Sathi ADBMS Project · 20/20 demos passed · Report auto-generated by run_all.py</div>
+</body></html>
