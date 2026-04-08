@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: aarogya_sathi_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-aarogya_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-aarogya_secure_pass_2024}
+      POSTGRES_DB: ${DB_NAME:-aarogya_sathi}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Automatically initialize database schema with our SQL scripts
+      - ./backend/database:/docker-entrypoint-initdb.d
+    networks:
+      - aarogya_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-aarogya_admin} -d ${DB_NAME:-aarogya_sathi}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: aarogya_sathi_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - aarogya_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aarogya_sathi_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${DB_USER:-aarogya_admin}:${DB_PASSWORD:-aarogya_secure_pass_2024}@db:5432/${DB_NAME:-aarogya_sathi}
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - aarogya_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: aarogya_sathi_nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./devops/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - aarogya_network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  aarogya_network:
+    driver: bridge
