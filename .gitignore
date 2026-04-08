@@ -1,76 +1,40 @@
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Aarogya Sathi .gitignore
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-# ── Python ──
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.Python
-env/
 venv/
-.venv/
-pip-log.txt
+.env
 *.egg-info/
 dist/
 build/
-*.egg
-.pytest_cache/
-htmlcov/
-.coverage
-*.cover
-.mypy_cache/
 
-# ── Flutter / Dart ──
+# Flutter
 .dart_tool/
-.packages
 .flutter-plugins
 .flutter-plugins-dependencies
+.packages
 build/
 *.iml
-*.log
 
-# ── IDE ──
-.idea/
+# IDE
 .vscode/
+.idea/
 *.swp
 *.swo
-*~
-.project
-.classpath
-.settings/
 
-# ── OS ──
+# OS
 .DS_Store
 Thumbs.db
-Desktop.ini
-*.lnk
 
-# ── Docker ──
-.dockerignore
-
-# ── Environment & Secrets ──
-.env
-.env.local
-.env.production
-*.pem
-*.key
-service-account-key.json
-key.json
-
-# ── Database ──
-*.sql.gz
-*.dump
-
-# ── Uploads ──
-uploads/
-*.tmp
-
-# ── Jenkins ──
+# Project specific
 jenkins-installer.msi
-
-# ── Misc ──
-node_modules/
+*.msi
+*.pptx
+.verdent/
+uploads/
 *.log
-*.bak
+
+# Keys
+*.pem
+service-account-key.json
