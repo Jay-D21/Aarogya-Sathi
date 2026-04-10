@@ -82,6 +82,8 @@ pipeline {
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         stage('Flutter - Get Dependencies') {
             steps {
+                bat 'git config --global --add safe.directory C:/Users/ADMIN/flutter'
+                bat 'git config --global --add safe.directory %WORKSPACE%'
                 dir('frontend') {
                     bat 'flutter pub get'
                 }
