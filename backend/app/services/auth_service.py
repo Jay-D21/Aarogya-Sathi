@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from fastapi import HTTPException, status
@@ -60,7 +60,6 @@ async def register_user(db: AsyncSession, data: RegisterRequest) -> User:
         user_id=user.id,
         plan_type="free",
         plan_name="Aarogya Sathi Basic",
-        billing_status="active",
     )
     db.add(subscription)
 
@@ -94,13 +93,15 @@ async def login_user(db: AsyncSession, data: LoginRequest) -> TokenResponse:
     # Record auth session
     session = AuthSession(
         user_id=user.id,
+        access_token=access_token,
         refresh_token=refresh_token,
-        expires_at=datetime.now(timezone.utc) + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS),
+        expires_at=datetime.utcnow() + timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES),
+        refresh_token_expires_at=datetime.utcnow() + timedelta(days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS),
     )
     db.add(session)
 
     # Update last login
-    user.last_login_at = datetime.now(timezone.utc)
+    user.last_login_at = datetime.utcnow()
     await db.commit()
 
     return TokenResponse(
@@ -134,6 +135,13 @@ async def refresh_access_token(db: AsyncSession, refresh_token: str) -> dict:
             detail="Refresh token has been revoked",
         )
 
+    # Check if refresh token has expired
+    if session.refresh_token_expires_at and datetime.utcnow() > session.refresh_token_expires_at:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token has expired",
+        )
+
     new_access_token = create_access_token({"sub": payload["sub"]})
     return {
         "access_token": new_access_token,
@@ -153,6 +161,6 @@ async def logout_user(db: AsyncSession, user_id: str) -> None:
     sessions = result.scalars().all()
     for session in sessions:
         session.is_active = False
-        session.logged_out_at = datetime.now(timezone.utc)
+        session.logged_out_at = datetime.utcnow()
 
     await db.commit()

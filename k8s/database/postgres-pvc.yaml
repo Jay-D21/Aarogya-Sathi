@@ -1,0 +1,18 @@
+# ============================================
+# PostgreSQL — PersistentVolumeClaim
+# ============================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: aarogya-sathi
+  labels:
+    app: aarogya-sathi
+    component: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard

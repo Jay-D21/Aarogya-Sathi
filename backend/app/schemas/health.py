@@ -23,6 +23,7 @@ class SymptomLogRequest(BaseModel):
     severity: int = Field(..., ge=1, le=10)
     duration: Optional[str] = None
     triggers: Optional[List[str]] = None
+    measured_at: Optional[datetime] = None
     notes: Optional[str] = None
 
 

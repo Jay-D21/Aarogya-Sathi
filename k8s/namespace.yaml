@@ -1,0 +1,10 @@
+# ============================================
+# Aarogya Sathi — Kubernetes Namespace
+# ============================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aarogya-sathi
+  labels:
+    app: aarogya-sathi
+    environment: production

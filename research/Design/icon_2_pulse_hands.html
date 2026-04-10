@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aarogya Sathi - Icon 2: Pulse Hands</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            padding: 40px;
+        }
+        h1 { margin-bottom: 30px; color: #4CAF50; }
+        .icon-container {
+            background: radial-gradient(circle, #1e293b, #0f172a);
+            padding: 60px;
+            border-radius: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .desc { margin-top: 30px; text-align: center; max-width: 400px; color: #94a3b8; }
+        .badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: rgba(76,175,80,0.2);
+            color: #4CAF50;
+            border-radius: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Icon 2: Pulse Hands</h1>
+    <div class="icon-container">
+        <svg width="200" height="200" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="handGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#4CAF50"/>
+                    <stop offset="100%" style="stop-color:#388E3C"/>
+                </linearGradient>
+            </defs>
+            <!-- Left hand -->
+            <path d="M30 80 C30 60 40 50 50 50 L55 50 C60 50 62 52 62 57 L62 75 C62 78 60 80 57 80 L40 80 C35 80 30 82 30 80Z"
+                  fill="url(#handGrad)"/>
+            <!-- Right hand -->
+            <path d="M110 80 C110 60 100 50 90 50 L85 50 C80 50 78 52 78 57 L78 75 C78 78 80 80 83 80 L100 80 C105 80 110 82 110 80Z"
+                  fill="url(#handGrad)"/>
+            <!-- Pulse wave -->
+            <path d="M35 65 L55 65 L62 50 L72 80 L82 45 L92 65 L105 65"
+                  stroke="#FF6B6B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <!-- Heart in center -->
+            <circle cx="70" cy="65" r="8" fill="#FF6B6B" opacity="0.3"/>
+            <!-- Small leaf accent top -->
+            <path d="M70 25 C70 25 60 35 60 45 C60 50 65 55 70 55 C75 55 80 50 80 45 C80 35 70 25 70 25Z"
+                  fill="#4CAF50"/>
+            <path d="M70 30 L70 50 M70 38 L63 45 M70 45 L77 38" stroke="#81C784" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+    </div>
+    <p class="desc">Nurturing hands cradling a heartbeat pulse wave, representing caring support for your health journey.</p>
+    <span class="badge">Warm & Nurturing</span>
+</body>
+</html>

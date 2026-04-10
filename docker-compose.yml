@@ -1,82 +1,157 @@
-version: '3.8'
+# ============================================
+# Aarogya Sathi — Docker Compose (Production)
+# 5 Containers: DB | Redis | Backend | Frontend | Nginx
+# ============================================
 
 services:
-  db:
-    image: postgres:15-alpine
-    container_name: aarogya_sathi_db
-    restart: always
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Container 1: PostgreSQL Database
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  postgres:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    container_name: aarogya-postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DB_USER:-aarogya_admin}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-aarogya_secure_pass_2024}
-      POSTGRES_DB: ${DB_NAME:-aarogya_sathi}
+      POSTGRES_DB: aarogya_sathi
+      POSTGRES_USER: aarogya_admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aarogya_secure_pass_2024}
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      # Automatically initialize database schema with our SQL scripts
-      - ./backend/database:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data
     networks:
-      - aarogya_network
+      - aarogya-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-aarogya_admin} -d ${DB_NAME:-aarogya_sathi}"]
+      test: ["CMD-SHELL", "pg_isready -U aarogya_admin -d aarogya_sathi"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
 
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Container 2: Redis Cache
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   redis:
     image: redis:7-alpine
-    container_name: aarogya_sathi_redis
-    restart: always
+    container_name: aarogya-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - redisdata:/data
     networks:
-      - aarogya_network
+      - aarogya-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
 
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Container 3: FastAPI Backend
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   backend:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: aarogya_sathi_backend
-    restart: always
+    container_name: aarogya-backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://aarogya_admin:${POSTGRES_PASSWORD:-aarogya_secure_pass_2024}@postgres:5432/aarogya_sathi
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET=${JWT_SECRET:-change-me-to-a-random-256-bit-secret-key}
+      - JWT_ALGORITHM=HS256
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - CORS_ORIGINS=http://localhost,http://localhost:80,http://localhost:3000
     ports:
       - "8000:8000"
-    env_file:
-      - ./backend/.env
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://${DB_USER:-aarogya_admin}:${DB_PASSWORD:-aarogya_secure_pass_2024}@db:5432/${DB_NAME:-aarogya_sathi}
-      - REDIS_URL=redis://redis:6379/0
     depends_on:
-      db:
+      postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     networks:
-      - aarogya_network
+      - aarogya-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
 
-  nginx:
-    image: nginx:alpine
-    container_name: aarogya_sathi_nginx
-    restart: always
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Container 4: Flutter Web Frontend
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: aarogya-frontend
+    restart: unless-stopped
     ports:
-      - "80:80"
-    volumes:
-      - ./devops/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - "3000:80"
     depends_on:
       - backend
     networks:
-      - aarogya_network
+      - aarogya-network
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
 
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Container 5: Nginx Reverse Proxy
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  nginx:
+    image: nginx:alpine
+    container_name: aarogya-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - aarogya-network
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Persistent Volumes
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 volumes:
-  postgres_data:
-  redis_data:
+  pgdata:
+    driver: local
+    name: aarogya_pgdata
+  redisdata:
+    driver: local
+    name: aarogya_redisdata
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Network
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 networks:
-  aarogya_network:
+  aarogya-network:
     driver: bridge
+    name: aarogya_network

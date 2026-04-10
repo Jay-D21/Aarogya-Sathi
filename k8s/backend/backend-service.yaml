@@ -1,0 +1,21 @@
+# ============================================
+# Backend (FastAPI) — Service
+# ============================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: aarogya-sathi
+  labels:
+    app: aarogya-sathi
+    component: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: aarogya-sathi
+    component: backend
+  ports:
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP
+      name: http

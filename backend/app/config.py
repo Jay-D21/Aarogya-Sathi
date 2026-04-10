@@ -14,8 +14,9 @@ class Settings(BaseSettings):
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30
     
-    # Gemini
+    # Gemini / Groq
     GOOGLE_API_KEY: str = ""
+    GROQ_API_KEY: str = ""
     
     # External APIs
     WAQI_API_KEY: str = ""
@@ -24,11 +25,15 @@ class Settings(BaseSettings):
     # App
     APP_ENV: str = "development"
     APP_DEBUG: bool = True
-    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:8080"
+    CORS_ORIGINS: str = "*"
     
     @property
     def cors_origins_list(self) -> List[str]:
-        return [origin.strip() for origin in self.CORS_ORIGINS.split(",")]
+        origins = [origin.strip() for origin in self.CORS_ORIGINS.split(",")]
+        # If wildcard is present, return just ["*"] for proper CORS handling
+        if "*" in origins:
+            return ["*"]
+        return origins
     
     class Config:
         env_file = ".env"

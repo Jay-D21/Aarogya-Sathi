@@ -49,7 +49,8 @@ class ReminderCreateRequest(BaseModel):
     description: Optional[str] = None
     category: str = Field(..., pattern="^(medication|water|meal|custom)$")
     reminder_time: str  # HH:MM format
-    active_days: Optional[List[str]] = None  # e.g. ["Mon", "Tue", ...]
+    frequency: str = Field("daily", pattern="^(daily|weekly|monthly|once)$")
+    active_days: Optional[List[int]] = None  # e.g. [0, 1, 2] for Sun, Mon, Tue
 
 
 class ReminderUpdateRequest(BaseModel):
@@ -57,7 +58,8 @@ class ReminderUpdateRequest(BaseModel):
     description: Optional[str] = None
     category: Optional[str] = None
     reminder_time: Optional[str] = None
-    active_days: Optional[List[str]] = None
+    frequency: Optional[str] = None
+    active_days: Optional[List[int]] = None
     is_active: Optional[bool] = None
 
 
@@ -66,7 +68,8 @@ class ReminderResponse(BaseModel):
     title: str
     category: str
     reminder_time: str
-    active_days: Optional[List[str]] = None
+    frequency: str = "daily"
+    active_days: Optional[List[int]] = None
     is_active: bool = True
 
     class Config:

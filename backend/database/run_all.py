@@ -45,6 +45,19 @@ def create_database():
     conn = get_connection(dbname='postgres', autocommit=True)
     cur = conn.cursor()
 
+    db_user = 'arogya_user'
+    db_pass = 'arogya_dev_password'
+
+    # Check if user exists, if not create
+    cur.execute(f"SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = '{db_user}'")
+    if not cur.fetchone():
+        print(f"  Creating user '{db_user}'...")
+        cur.execute(f"CREATE USER {db_user} WITH PASSWORD '{db_pass}'")
+        cur.execute(f"ALTER USER {db_user} CREATEDB")
+    else:
+        print(f"  User '{db_user}' exists. Updating password...")
+        cur.execute(f"ALTER USER {db_user} WITH PASSWORD '{db_pass}'")
+
     cur.execute(f"SELECT 1 FROM pg_catalog.pg_database WHERE datname = '{DB_NAME}'")
     if cur.fetchone():
         print(f"  Database '{DB_NAME}' exists. Dropping...")
@@ -55,17 +68,23 @@ def create_database():
         """)
         cur.execute(f"DROP DATABASE {DB_NAME}")
 
-    print(f"  Creating database '{DB_NAME}'...")
-    cur.execute(f"CREATE DATABASE {DB_NAME}")
+    print(f"  Creating database '{DB_NAME}' with owner '{db_user}'...")
+    cur.execute(f"CREATE DATABASE {DB_NAME} OWNER {db_user}")
     cur.close()
     conn.close()
 
-    # Enable extensions
-    conn = get_connection(autocommit=True)
+    # Enable extensions (needs superuser)
+    conn = get_connection(dbname=DB_NAME, autocommit=True)
     cur = conn.cursor()
     cur.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
     cur.execute('CREATE EXTENSION IF NOT EXISTS "pgcrypto";')
-    print("  ✓ Extensions enabled (uuid-ossp, pgcrypto)")
+    
+    print(f"  Granting permissions to '{db_user}'...")
+    cur.execute(f"GRANT ALL PRIVILEGES ON DATABASE {DB_NAME} TO {db_user}")
+    cur.execute(f"GRANT ALL PRIVILEGES ON SCHEMA public TO {db_user}")
+    cur.execute(f"ALTER SCHEMA public OWNER TO {db_user}")
+    
+    print("  ✓ Extensions enabled and permissions granted")
     cur.close()
     conn.close()
 

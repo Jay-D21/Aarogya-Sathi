@@ -1,0 +1,16 @@
+<svg width="512" height="512" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="sGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4CAF50"/>
+            <stop offset="50%" style="stop-color:#81C784"/>
+            <stop offset="100%" style="stop-color:#FF6B6B"/>
+        </linearGradient>
+    </defs>
+    <!-- Stylized S -->
+    <path d="M95 40 C95 30 85 25 75 25 C60 25 50 35 50 45 C50 55 60 60 75 65 C90 70 100 75 100 90 C100 105 85 115 70 115 C50 115 35 100 35 80" stroke="url(#sGrad)" stroke-width="10" stroke-linecap="round" fill="none"/>
+    <!-- Pulse overlay -->
+    <path d="M30 55 L50 55 L58 45 L68 65 L78 50 L88 60 L110 60" stroke="#FF6B6B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <!-- Leaf accent -->
+    <path d="M105 30 C105 30 115 35 120 45 C120 52 115 58 108 58 C100 58 95 50 95 45 C95 35 105 30 105 30Z" fill="#4CAF50"/>
+    <path d="M108 35 L108 52 M108 42 L115 48" stroke="#81C784" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

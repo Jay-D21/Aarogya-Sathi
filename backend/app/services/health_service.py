@@ -48,7 +48,7 @@ async def log_sugar(db: AsyncSession, user_id, data: SugarReadingRequest) -> Hea
         record_type="vitals",
         blood_sugar_fasting=data.glucose_value if data.reading_type == "fasting" else None,
         blood_sugar_random=data.glucose_value if data.reading_type == "random" else None,
-        blood_sugar_post_prandial=data.glucose_value if data.reading_type == "post_meal" else None,
+        blood_sugar_pp=data.glucose_value if data.reading_type == "post_meal" else None,
         notes=data.notes,
         recorded_at=data.measured_at,
     )
@@ -67,12 +67,17 @@ async def log_sugar(db: AsyncSession, user_id, data: SugarReadingRequest) -> Hea
 
 async def log_symptom(db: AsyncSession, user_id, data: SymptomLogRequest) -> HealthRecordResponse:
     """Log symptoms."""
+    # Allow specifying time if we want to add it to schema later
+    measured_at = getattr(data, 'measured_at', datetime.now(timezone.utc))
+    
     record = HealthRecord(
         user_id=user_id,
         record_type="symptom",
-        symptoms={"symptoms": data.symptoms, "severity": data.severity, "duration": data.duration, "triggers": data.triggers},
+        symptom_description=", ".join(data.symptoms) if data.symptoms else None,
+        symptom_severity=data.severity,
+        symptom_duration=data.duration,
         notes=data.notes,
-        recorded_at=datetime.now(timezone.utc),
+        recorded_at=measured_at,
     )
     db.add(record)
     await db.commit()
@@ -147,7 +152,9 @@ async def get_records(
                 "sugar_fasting": r.blood_sugar_fasting,
                 "sugar_random": r.blood_sugar_random,
                 "weight_kg": float(r.weight_kg) if r.weight_kg else None,
-                "symptoms": r.symptoms,
+                "sleep_hours": float(r.sleep_hours) if r.sleep_hours else None,
+                "sleep_quality": int(r.sleep_quality) if r.sleep_quality and str(r.sleep_quality).isdigit() else None,
+                "water_intake_liters": float(r.water_intake_liters) if r.water_intake_liters else None,
             },
             recorded_at=r.recorded_at,
         )

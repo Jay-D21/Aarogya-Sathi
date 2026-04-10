@@ -1,0 +1,22 @@
+# ============================================
+# Aarogya Sathi — ConfigMap (Non-Sensitive Config)
+# ============================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aarogya-config
+  namespace: aarogya-sathi
+  labels:
+    app: aarogya-sathi
+data:
+  APP_ENV: "production"
+  APP_DEBUG: "false"
+  APP_PORT: "8000"
+  DATABASE_HOST: "postgres-service"
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: "aarogya_sathi"
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  JWT_ALGORITHM: "HS256"
+  JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+  CORS_ORIGINS: "http://localhost,http://frontend-service"

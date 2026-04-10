@@ -1,0 +1,28 @@
+# Build outputs
+build/
+.dart_tool/
+
+# Platform-specific (not needed for web)
+android/
+ios/
+macos/
+linux/
+windows/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Git
+.git/
+.gitignore
+
+# Misc
+*.md
+analyze_out.txt
+devtools_options.yaml
+
+# Docker
+Dockerfile
+docker-compose*.yml

@@ -1,46 +1,46 @@
-# Use a debian image to install flutter
-FROM debian:bullseye-slim AS build-env
+# ============================================
+# Aarogya Sathi — Frontend (Flutter Web)
+# Multi-stage: Build → Serve with Nginx
+# ============================================
 
-# Install dependencies required by Flutter
-RUN apt-get update && apt-get install -y \
-    curl \
-    git \
-    wget \
-    unzip \
-    libgconf-2-4 \
-    gdb \
-    libstdc++6 \
-    libglu1-mesa \
-    fonts-droid-fallback \
-    lib32stdc++6 \
-    python3 \
-    && rm -rf /var/lib/apt/lists/*
+# ── Stage 1: Flutter Web Build ──
+FROM ghcr.io/cirruslabs/flutter:3.29.3 AS build
 
-# Clone the flutter repo
-RUN git clone https://github.com/flutter/flutter.git /usr/local/flutter
-
-# Set flutter path
-ENV PATH="/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:${PATH}"
-
-# Run flutter doctor
-RUN flutter doctor -v
-
-# Enable flutter web
-RUN flutter channel stable
-RUN flutter upgrade
-RUN flutter config --enable-web
-
-# Copy files to container and build
 WORKDIR /app
-COPY . .
+
+# Copy dependency files first (cache layer)
+COPY pubspec.yaml pubspec.lock ./
+
+# Get dependencies
 RUN flutter pub get
-RUN flutter build web
 
-# Step 2: Use nginx to serve the web application
-FROM nginx:alpine
-# Copy the built output from the first stage
-COPY --from=build-env /app/build/web /usr/share/nginx/html
+# Copy source code
+COPY . .
 
-# Expose port 80
+# Build Flutter web release
+RUN flutter build web --release --web-renderer html
+
+# ── Stage 2: Nginx Production Server ──
+FROM nginx:alpine AS production
+
+# Labels
+LABEL maintainer="Jay-D21 <jay@aarogyasathi.dev>"
+LABEL description="Aarogya Sathi Flutter Web Frontend"
+LABEL version="1.0.0"
+
+# Remove default nginx config
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Add custom Nginx config for SPA routing
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy built Flutter web app
+COPY --from=build /app/build/web /usr/share/nginx/html
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD wget -q --spider http://localhost:80/ || exit 1
+
 EXPOSE 80
+
 CMD ["nginx", "-g", "daemon off;"]

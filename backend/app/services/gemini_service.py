@@ -1,7 +1,7 @@
 """Google Gemini 2.0 Flash integration for health chat responses."""
 
 import time
-import google.generativeai as genai
+import httpx
 from app.config import settings
 
 # System prompt (condensed from GEMINI_SYSTEM_PROMPT_740_LINES.md)
@@ -41,20 +41,12 @@ SYSTEM_PROMPT = """You are Aarogya Sathi (आरोग्य साथी), an A
 """
 
 
-def _configure_gemini():
-    """Initialize Gemini client."""
-    if not settings.GOOGLE_API_KEY:
-        return None
-    genai.configure(api_key=settings.GOOGLE_API_KEY)
-    return genai.GenerativeModel("gemini-2.0-flash")
-
-
 async def get_ai_response(
     message: str,
     health_context: dict = None,
     env_context: dict = None,
 ) -> dict:
-    """Get AI response from Gemini with health and environmental context."""
+    """Get AI response from Groq API with health and environmental context."""
     start_time = time.time()
 
     # Build context string
@@ -77,8 +69,9 @@ async def get_ai_response(
     # Build full prompt
     full_prompt = f"{context_str}\n\nUSER MESSAGE: {message}" if context_str else message
 
-    model = _configure_gemini()
-    if model is None:
+    api_key = settings.GROQ_API_KEY or "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"
+    
+    if not api_key:
         # Fallback if no API key is configured
         elapsed = int((time.time() - start_time) * 1000)
         return {
@@ -93,27 +86,37 @@ async def get_ai_response(
             "model": "fallback",
         }
 
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "model": "llama-3.3-70b-versatile",
+        "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": full_prompt}
+        ],
+        "temperature": 0.7,
+        "max_tokens": 1024,
+    }
+
     try:
-        response = model.generate_content(
-            contents=full_prompt,
-            generation_config=genai.types.GenerationConfig(
-                temperature=0.7,
-                max_output_tokens=1024,
-            ),
-            system_instruction=SYSTEM_PROMPT,
-        )
+        async with httpx.AsyncClient() as client:
+            resp = await client.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=data, timeout=15)
+            resp.raise_for_status()
+            result_json = resp.json()
+            
+            answer = result_json["choices"][0]["message"]["content"]
+            tokens_used = result_json.get("usage", {}).get("total_tokens", 0)
+            elapsed = int((time.time() - start_time) * 1000)
 
-        elapsed = int((time.time() - start_time) * 1000)
-        tokens_used = 0
-        if hasattr(response, "usage_metadata") and response.usage_metadata:
-            tokens_used = getattr(response.usage_metadata, "total_token_count", 0)
-
-        return {
-            "response": response.text,
-            "tokens_used": tokens_used,
-            "response_time_ms": elapsed,
-            "model": "gemini-2.0-flash",
-        }
+            return {
+                "response": answer,
+                "tokens_used": tokens_used,
+                "response_time_ms": elapsed,
+                "model": "groq/llama-3.3-70b",
+            }
     except Exception as e:
         elapsed = int((time.time() - start_time) * 1000)
         return {

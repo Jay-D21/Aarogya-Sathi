@@ -1,0 +1,54 @@
+# ============================================
+# Frontend (Flutter Web) — Deployment
+# ============================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: aarogya-sathi
+  labels:
+    app: aarogya-sathi
+    component: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: aarogya-sathi
+      component: frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: aarogya-sathi
+        component: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: jayd21/aarogya-frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+              name: http
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 15

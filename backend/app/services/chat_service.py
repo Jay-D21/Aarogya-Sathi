@@ -1,6 +1,6 @@
 """Chat service — orchestrates Gemini AI, safety pipeline, and database persistence."""
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from app.models.user import User
@@ -30,19 +30,23 @@ async def _get_health_context(db: AsyncSession, user: User) -> dict:
     if bp_record:
         context["latest_bp"] = f"{bp_record.blood_pressure_systolic}/{bp_record.blood_pressure_diastolic}"
 
-    # Latest Sugar
-    result = await db.execute(
-        select(HealthRecord)
-        .where(
-            HealthRecord.user_id == user.id,
-            HealthRecord.blood_sugar_random.is_not(None),
-        )
-        .order_by(HealthRecord.recorded_at.desc())
-        .limit(1)
-    )
+    # Latest Sugar (check all types)
+    sugar_query = select(HealthRecord).where(
+        HealthRecord.user_id == user.id,
+        (HealthRecord.blood_sugar_random.is_not(None)) | 
+        (HealthRecord.blood_sugar_fasting.is_not(None)) | 
+        (HealthRecord.blood_sugar_pp.is_not(None))
+    ).order_by(HealthRecord.recorded_at.desc()).limit(1)
+    
+    result = await db.execute(sugar_query)
     sugar_record = result.scalar_one_or_none()
     if sugar_record:
-        context["latest_sugar"] = f"{sugar_record.blood_sugar_random} mg/dL"
+        if sugar_record.blood_sugar_fasting:
+            context["latest_sugar"] = f"{sugar_record.blood_sugar_fasting} mg/dL (Fasting)"
+        elif sugar_record.blood_sugar_pp:
+            context["latest_sugar"] = f"{sugar_record.blood_sugar_pp} mg/dL (Post-Meal)"
+        else:
+            context["latest_sugar"] = f"{sugar_record.blood_sugar_random} mg/dL (Random)"
 
     # Active conditions
     result = await db.execute(
@@ -54,6 +58,22 @@ async def _get_health_context(db: AsyncSession, user: User) -> dict:
     conditions = result.scalars().all()
     if conditions:
         context["conditions"] = ", ".join(conditions)
+
+    # Recent Symptoms (last 7 days)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=7)
+    result = await db.execute(
+        select(HealthRecord.symptom_description)
+        .where(
+            HealthRecord.user_id == user.id,
+            HealthRecord.record_type == "symptom",
+            HealthRecord.recorded_at >= cutoff
+        )
+        .order_by(HealthRecord.recorded_at.desc())
+        .limit(3)
+    )
+    symptoms = result.scalars().all()
+    if symptoms:
+        context["recent_symptoms"] = "; ".join(symptoms)
 
     # BMI
     if user.height_cm:
@@ -103,12 +123,11 @@ async def process_chat_message(
         user_id=user.id,
         user_message=data.message,
         ai_response=safety_result["safe_response"],
-        language=data.language,
+        message_language=data.language,
         environmental_context=env_context,
-        health_context_used=bool(health_context),
+        user_health_context=health_context if health_context else None,
         safety_check_passed=safety_result["safety_passed"],
-        contained_medical_advice=True,
-        contained_prescription_claim=safety_result["prescription_claim"],
+        contained_prescription=safety_result["prescription_claim"],
         contained_diagnosis_claim=safety_result["diagnosis_claim"],
         contained_emergency_keywords=safety_result["emergency"],
         tokens_used=ai_result.get("tokens_used", 0),
@@ -182,7 +201,7 @@ async def rate_chat(db: AsyncSession, user_id: str, chat_id: str, rating: int, f
     chat = result.scalar_one_or_none()
     if not chat:
         return None
-    chat.user_rating = rating
-    chat.user_feedback = feedback
+    chat.user_satisfaction_rating = rating
+    chat.feedback_text = feedback
     await db.commit()
     return {"chat_id": chat_id, "rating": rating}

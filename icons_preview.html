@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aarogya Sathi - Precise SVG Icons</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+        }
+        .container {
+            display: flex;
+            gap: 40px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .icon-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 20px;
+        }
+        .icon-label {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            color: #ccc;
+        }
+        svg {
+            width: 200px;
+            height: 200px;
+            border-radius: 44px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.2s ease;
+        }
+        svg:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <h1>Flawless Vector Icons (SVG)</h1>
+    <p>AI image generators struggle with pixel-perfect minimalism. I have hand-coded the mathematical SVG paths for the best designs from your references.</p>
+    
+    <div class="container">
+        <!-- Icon 1: A + ECG -->
+        <div class="icon-card">
+            <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+              <rect width="512" height="512" fill="#0A0A0A" />
+              <!-- Letter A sides -->
+              <path d="M 256 120 L 140 380 M 256 120 L 372 380" stroke="#F5F5F5" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              <!-- ECG Crossbar -->
+              <path d="M 165 290 L 195 290 L 225 190 L 285 390 L 315 290 L 347 290" stroke="#10B981" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+            </svg>
+            <div class="icon-label">A + ECG Crossbar</div>
+        </div>
+
+        <!-- Icon 2: Dual Arc -->
+        <div class="icon-card">
+            <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+              <rect width="512" height="512" fill="#111827" />
+              <!-- Outer Arc -->
+              <path d="M 120 340 A 136 136 0 0 1 392 340" stroke="#FEF3C7" stroke-width="40" stroke-linecap="round" fill="none" />
+              <!-- Inner Arc -->
+              <path d="M 190 340 A 66 66 0 0 1 322 340" stroke="#10B981" stroke-width="40" stroke-linecap="round" fill="none" />
+              <!-- Origin Dot -->
+              <circle cx="256" cy="340" r="24" fill="#10B981" />
+            </svg>
+            <div class="icon-label">Dual Arc · Reach</div>
+        </div>
+
+        <!-- Icon 3: Bold Leaf -->
+        <div class="icon-card">
+            <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+              <rect width="512" height="512" fill="#022C22" />
+              <!-- Leaf -->
+              <path d="M 140 372 C 140 140, 256 108, 372 108 C 372 372, 256 404, 140 372 Z" fill="#10B981" />
+              <!-- Vein -->
+              <path d="M 140 372 Q 256 256 372 108" stroke="#022C22" stroke-width="16" stroke-linecap="round" fill="none" />
+            </svg>
+            <div class="icon-label">Bold Leaf</div>
+        </div>
+        
+        <!-- Icon 4: Pure Signal -->
+        <div class="icon-card">
+            <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+              <rect width="512" height="512" fill="#FAFAFA" />
+              <!-- Signal Line -->
+              <path d="M 96 256 L 192 256 L 224 140 L 288 372 L 320 256 L 416 256" stroke="#047857" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+            </svg>
+            <div class="icon-label">Pure Signal (Light Mode)</div>
+        </div>
+    </div>
+</body>
+</html>

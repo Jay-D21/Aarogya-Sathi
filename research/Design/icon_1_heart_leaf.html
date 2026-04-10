@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aarogya Sathi - Icon Designs</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 40px 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .header h1 {
+            font-size: 3em;
+            background: linear-gradient(135deg, #4CAF50, #81C784, #A5D6A7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #94a3b8;
+            font-size: 1.2em;
+        }
+        .icons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        .icon-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        .icon-card:hover {
+            transform: translateY(-10px);
+            border-color: #4CAF50;
+            box-shadow: 0 20px 60px rgba(76, 175, 80, 0.2);
+        }
+        .icon-preview {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 30px;
+            background: radial-gradient(circle, #2d3a4f 0%, #1a2332 100%);
+            border-radius: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .icon-title {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            color: #e2e8f0;
+        }
+        .icon-desc {
+            color: #64748b;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+        .badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-top: 15px;
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+        }
+        .color-palette {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+        .color-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        .dark-preview {
+            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%) !important;
+        }
+        .light-preview {
+            background: radial-gradient(circle, #f8fafc 0%, #e2e8f0 100%) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Aarogya Sathi</h1>
+        <p>Icon Design Concepts for Your Health & Wellness App</p>
+    </div>
+
+    <div class="icons-grid">
+
+        <!-- Icon 1: Heart-Leaf Fusion -->
+        <div class="icon-card">
+            <div class="icon-preview dark-preview">
+                <svg width="140" height="140" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Heart with leaf integration -->
+                    <defs>
+                        <linearGradient id="heartGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#4CAF50"/>
+                            <stop offset="100%" style="stop-color:#2E7D32"/>
+                        </linearGradient>
+                        <linearGradient id="pulseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#FF6B6B"/>
+                            <stop offset="100%" style="stop-color:#EE5A5A"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Leaf shape (left half of heart) -->
+                    <path d="M70 120 C70 120 25 85 25 50 C25 30 40 20 55 20 C65 20 70 25 70 25 C70 25 75 20 85 20 C100 20 115 30 115 50 C115 85 70 120 70 120Z"
+                          fill="url(#heartGrad1)" opacity="0.9"/>
+                    <!-- Leaf vein -->
+                    <path d="M70 35 L70 95 M70 50 L50 65 M70 65 L90 50 M70 80 L55 70"
+                          stroke="#81C784" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                    <!-- Pulse line overlay -->
+                    <path d="M25 55 L45 55 L55 40 L65 70 L75 50 L85 60 L95 55 L115 55"
+                          stroke="url(#pulseGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- Heart highlight -->
+                    <ellipse cx="50" cy="40" rx="12" ry="8" fill="white" opacity="0.2"/>
+                </svg>
+            </div>
+            <h3 class="icon-title">1. Heart-Leaf Fusion</h3>
+            <p class="icon-desc">A heart shape with leaf veins forming naturally within, symbolizing organic wellness meeting vital health.</p>
+            <div class="color-palette">
+                <div class="color-dot" style="background:#4CAF50"></div>
+                <div class="color-dot" style="background:#2E7D32"></div>
+                <div class="color-dot" style="background:#FF6B6B"></div>
+                <div class="color-dot" style="background:#81C784"></div>
+            </div>
+            <span class="badge">Primary Recommendation</span>
+        </div>
+
+        <!-- Icon 2: Pulse Hands -->
+        <div class="icon-card">
+            <div class="icon-preview dark-preview">
+                <svg width="140" height="140" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Two hands cradling a pulse -->
+                    <defs>
+                        <linearGradient id="handGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#4CAF50"/>
+                            <stop offset="100%" style="stop-color:#388E3C"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Left hand -->
+                    <path d="M30 80 C30 60 40 50 50 50 L55 50 C60 50 62 52 62 57 L62 75 C62 78 60 80 57 80 L40 80 C35 80 30 82 30 80Z"
+                          fill="url(#handGrad)"/>
+                    <!-- Right hand -->
+                    <path d="M110 80 C110 60 100 50 90 50 L85 50 C80 50 78 52 78 57 L78 75 C78 78 80 80 83 80 L100 80 C105 80 110 82 110 80Z"
+                          fill="url(#handGrad)"/>
+                    <!-- Pulse wave -->
+                    <path d="M35 65 L55 65 L62 50 L72 80 L82 45 L92 65 L105 65"
+                          stroke="#FF6B6B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <!-- Heart in center -->
+                    <circle cx="70" cy="65" r="8" fill="#FF6B6B" opacity="0.3"/>
+                    <!-- Small leaf accent top -->
+                    <path d="M70 25 C70 25 60 35 60 45 C60 50 65 55 70 55 C75 55 80 50 80 45 C80 35 70 25 70 25Z"
+                          fill="#4CAF50"/>
+                    <path d="M70 30 L70 50 M70 38 L63 45 M70 45 L77 38" stroke="#81C784" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h3 class="icon-title">2. Pulse Hands</h3>
+            <p class="icon-desc">Nurturing hands cradling a heartbeat pulse wave, representing caring support for your health journey.</p>
+            <div class="color-palette">
+                <div class="color-dot" style="background:#4CAF50"></div>
+                <div class="color-dot" style="background:#388E3C"></div>
+                <div class="color-dot" style="background:#FF6B6B"></div>
+            </div>
+            <span class="badge">Warm & Nurturing</span>
+        </div>
+
+        <!-- Icon 3: S-Monogram Pulse -->
+        <div class="icon-card">
+            <div class="icon-preview dark-preview">
+                <svg width="140" height="140" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="sGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#4CAF50"/>
+                            <stop offset="50%" style="stop-color:#81C784"/>
+                            <stop offset="100%" style="stop-color:#FF6B6B"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Stylized S with pulse integrated -->
+                    <path d="M95 40 C95 30 85 25 75 25 C60 25 50 35 50 45 C50 55 60 60 75 65 C90 70 100 75 100 90 C100 105 85 115 70 115 C50 115 35 100 35 80"
+                          stroke="url(#sGrad)" stroke-width="10" stroke-linecap="round" fill="none"/>
+                    <!-- Pulse lines cutting through S -->
+                    <path d="M30 55 L50 55 L58 45 L68 65 L78 50 L88 60 L110 60"
+                          stroke="#FF6B6B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <!-- Leaf accent top right -->
+                    <path d="M105 30 C105 30 115 35 120 45 C120 52 115 58 108 58 C100 58 95 50 95 45 C95 35 105 30 105 30Z"
+                          fill="#4CAF50"/>
+                    <path d="M108 35 L108 52 M108 42 L115 48" stroke="#81C784" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h3 class="icon-title">3. S-Monogram Pulse</h3>
+            <p class="icon-desc">Modern minimalist "S" for Sathi with integrated pulse waves, clean and memorable for app icon use.</p>
+            <div class="color-palette">
+                <div class="color-dot" style="background:#4CAF50"></div>
+                <div class="color-dot" style="background:#81C784"></div>
+                <div class="color-dot" style="background:#FF6B6B"></div>
+            </div>
+            <span class="badge">Modern & Clean</span>
+        </div>
+
+        <!-- Icon 4: Tree of Life -->
+        <div class="icon-card">
+            <div class="icon-preview dark-preview">
+                <svg width="140" height="140" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="treeGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+                            <stop offset="0%" style="stop-color:#5D4037"/>
+                            <stop offset="30%" style="stop-color:#795548"/>
+                            <stop offset="100%" style="stop-color:#4CAF50"/>
+                        </linearGradient>
+                        <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#81C784"/>
+                            <stop offset="100%" style="stop-color:#4CAF50"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Tree trunk -->
+                    <path d="M65 130 L65 80 C65 75 60 70 55 70 L55 65 C55 55 60 50 70 50 C80 50 85 55 85 65 L85 70 C80 70 75 75 75 80 L75 130"
+                          fill="url(#treeGrad)"/>
+                    <!-- Heart-shaped canopy -->
+                    <path d="M70 15 C70 15 40 30 40 50 C40 65 55 75 70 85 C85 75 100 65 100 50 C100 30 70 15 70 15Z"
+                          fill="url(#leafGrad)"/>
+                    <!-- Heart in canopy -->
+                    <path d="M70 35 C70 35 58 42 58 52 C58 58 63 62 70 68 C77 62 82 58 82 52 C82 42 70 35 70 35Z"
+                          fill="#FF6B6B" opacity="0.7"/>
+                    <!-- Pulse line at base -->
+                    <path d="M35 125 L55 125 L62 118 L70 132 L78 118 L85 125 L105 125"
+                          stroke="#FF6B6B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <h3 class="icon-title">4. Tree of Life</h3>
+            <p class="icon-desc">A tree with heart-shaped canopy and pulse roots, symbolizing growth, vitality, and grounded wellness.</p>
+            <div class="color-palette">
+                <div class="color-dot" style="background:#5D4037"></div>
+                <div class="color-dot" style="background:#4CAF50"></div>
+                <div class="color-dot" style="background:#81C784"></div>
+                <div class="color-dot" style="background:#FF6B6B"></div>
+            </div>
+            <span class="badge">Nature & Growth</span>
+        </div>
+
+        <!-- Icon 5: Shield Wellness -->
+        <div class="icon-card">
+            <div class="icon-preview dark-preview">
+                <svg width="140" height="140" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#4CAF50"/>
+                            <stop offset="100%" style="stop-color:#2E7D32"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Shield shape -->
+                    <path d="M70 20 L110 35 L110 70 C110 100 90 120 70 130 C50 120 30 100 30 70 L30 35 L70 20Z"
+                          fill="url(#shieldGrad)"/>
+                    <!-- Shield inner highlight -->
+                    <path d="M70 30 L100 42 L100 70 C100 92 85 108 70 117 C55 108 40 92 40 70 L40 42 L70 30Z"
+                          fill="#388E3C" opacity="0.5"/>
+                    <!-- Heart in center -->
+                    <path d="M70 50 C70 50 52 60 52 72 C52 82 60 90 70 98 C80 90 88 82 88 72 C88 60 70 50 70 50Z"
+                          fill="#FF6B6B"/>
+                    <!-- Pulse wave on heart -->
+                    <path d="M52 72 L62 72 L67 65 L73 80 L80 68 L88 72"
+                          stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.8"/>
+                    <!-- Small leaf accent -->
+                    <path d="M95 30 C95 30 105 25 110 30 C115 35 110 45 105 45 C100 45 95 38 95 30Z"
+                          fill="#81C784"/>
+                </svg>
+            </div>
+            <h3 class="icon-title">5. Shield Wellness</h3>
+            <p class="icon-desc">A protective shield with heart and pulse, representing health protection and the app as your health guardian.</p>
+            <div class="color-palette">
+                <div class="color-dot" style="background:#4CAF50"></div>
+                <div class="color-dot" style="background:#2E7D32"></div>
+                <div class="color-dot" style="background:#FF6B6B"></div>
+                <div class="color-dot" style="background:#81C784"></div>
+            </div>
+            <span class="badge">Protection & Trust</span>
+        </div>
+
+    </div>
+
+    <div style="text-align:center; margin-top:60px; color:#64748b;">
+        <p>All icons are scalable SVG designs • Best viewed on desktop</p>
+        <p style="margin-top:10px;">Colors: Green (#4CAF50) = Wellness/Nature • Coral (#FF6B6B) = Heart/Vitality</p>
+    </div>
+</body>
+</html>

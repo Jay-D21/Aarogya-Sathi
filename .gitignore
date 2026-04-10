@@ -1,40 +1,68 @@
-# Python
+# ============================================
+# Aarogya Sathi — .gitignore
+# ============================================
+
+# ── Python ──
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 venv/
-.env
+.venv/
 *.egg-info/
 dist/
-build/
 
-# Flutter
+# ── Environment files (SECRETS!) ──
+.env
+.env.local
+.env.production
+*.env
+
+# ── Flutter ──
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
 .packages
-build/
 *.iml
 
-# IDE
+# ── Build outputs ──
+build/
+*.apk
+*.aab
+
+# ── IDE ──
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
+# ── OS ──
 .DS_Store
 Thumbs.db
 
-# Project specific
+# ── Docker ──
+# Don't ignore docker-compose or Dockerfiles (needed for DevOps demo)
+
+# ── Kubernetes secrets (real values) ──
+# k8s/secrets.yaml  ← Uncomment in production!
+
+# ── Project specific ──
 jenkins-installer.msi
 *.msi
 *.pptx
 .verdent/
+.claude/
 uploads/
 *.log
+test.db
 
-# Keys
+# ── Keys ──
 *.pem
 service-account-key.json
+
+# ── Test artifacts ──
+test-results.xml
+coverage.xml
+htmlcov/
+.coverage
+.pytest_cache/

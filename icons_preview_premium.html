@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aarogya Sathi - Premium Refined SVGs</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            margin: 0;
+        }
+        .section-title {
+            margin-top: 40px;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+            color: #10B981;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .container {
+            display: flex;
+            gap: 50px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .icon-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #1e1e1e;
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid #333;
+        }
+        .icon-label {
+            margin-top: 24px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fff;
+        }
+        .icon-desc {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: #888;
+            text-align: center;
+            max-width: 250px;
+        }
+        svg {
+            width: 250px;
+            height: 250px;
+            border-radius: 54px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        svg:hover {
+            transform: scale(1.08) translateY(-10px);
+        }
+    </style>
+</head>
+<body>
+    <h1>Premium Icon Refinements</h1>
+    <p>I took those two specific directions and pushed them to the highest tier of aesthetic design.</p>
+    
+    <div class="section-title">Concept 1: The Dual Arc</div>
+    <div class="container">
+        <!-- Dual Arc V1: Glowing Glass -->
+        <div class="icon-card">
+            <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#0F172A" />
+                  <stop offset="100%" stop-color="#020617" />
+                </linearGradient>
+                <linearGradient id="arcGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#FDE68A" />
+                  <stop offset="100%" stop-color="#F59E0B" />
+                </linearGradient>
+                <linearGradient id="arcGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#34D399" />
+                  <stop offset="100%" stop-color="#059669" />
+                </linearGradient>
+                <filter id="glow1">
+                  <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#F59E0B" flood-opacity="0.3"/>
+                </filter>
+                 <filter id="glow2">
+                  <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#059669" flood-opacity="0.3"/>
+                </filter>
+              </defs>
+              <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+              <path d="M 100 370 A 156 156 0 0 1 412 370" stroke="url(#arcGrad1)" stroke-width="48" stroke-linecap="round" fill="none" filter="url(#glow1)" />
+              <path d="M 190 370 A 66 66 0 0 1 322 370" stroke="url(#arcGrad2)" stroke-width="48" stroke-linecap="round" fill="none" filter="url(#glow2)" />
+              <circle cx="256" cy="370" r="24" fill="#FFFFFF" />
+            </svg>
+            <div class="icon-label">Google Glow Edition</div>
+            <div class="icon-desc">Deep modern background gradient, subtle drop-shadow glows under the arcs, and vibrant gradient strokes.</div>
+        </div>
+
+        <!-- Dual Arc V2: Anthropic Elegance -->
+        <div class="icon-card">
+            <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+              <rect width="512" height="512" rx="112" fill="#0A0A0A" />
+              <!-- Outer Arc -->
+              <path d="M 130 350 A 126 126 0 0 1 382 350" stroke="#FAFAFA" stroke-width="20" stroke-linecap="round" fill="none" />
+              <!-- Inner Arc -->
+              <path d="M 210 350 A 46 46 0 0 1 302 350" stroke="#10B981" stroke-width="20" stroke-linecap="round" fill="none" />
+              <!-- Center Dot -->
+              <circle cx="256" cy="350" r="14" fill="#10B981" />
+            </svg>
+            <div class="icon-label">Anthropic Elegance</div>
+            <div class="icon-desc">Extreme minimalist geometry. Thinner, sharper strokes. Absolute precision and luxury on matte black.</div>
+        </div>
+    </div>
+
+    <div class="section-title">Concept 2: The Pure Pulse</div>
+    <div class="container">
+        <!-- Pulse V1: The Ribbon Flow -->
+        <div class="icon-card">
+            <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="pulseG" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#34D399" />
+                  <stop offset="100%" stop-color="#047857" />
+                </linearGradient>
+                <filter id="softShadowPulse">
+                  <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#047857" flood-opacity="0.35"/>
+                </filter>
+              </defs>
+              <rect width="512" height="512" rx="112" fill="#FAFAFA" />
+              <path d="M 80 256 L 160 256 C 210 256, 210 120, 240 120 C 270 120, 260 392, 296 392 C 320 392, 330 256, 360 256 L 432 256" stroke="url(#pulseG)" stroke-width="44" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#softShadowPulse)" />
+            </svg>
+            <div class="icon-label">Flowing Ribbon Pulse</div>
+            <div class="icon-desc">The pulse line is curved using bezier paths to look like a fluid, organic ribbon. Gorgeous drop shadow adds depth.</div>
+        </div>
+
+        <!-- Pulse V2: Microsoft Fluent Mesh -->
+        <div class="icon-card">
+            <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="bgMesh" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#F0FDF4" />
+                  <stop offset="100%" stop-color="#CCFBF1" />
+                </linearGradient>
+              </defs>
+              <rect width="512" height="512" rx="112" fill="url(#bgMesh)" />
+              <path d="M 120 256 L 200 256 L 232 150 L 280 362 L 312 256 L 392 256" stroke="#059669" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+            </svg>
+            <div class="icon-label">Fluent Mesh Background</div>
+            <div class="icon-desc">A beautiful, incredibly soft mint mesh gradient background. Extrabold, perfectly proportioned geometric pulse line.</div>
+        </div>
+    </div>
+</body>
+</html>

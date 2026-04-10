@@ -20,32 +20,42 @@ async def log_steps(db: AsyncSession, user_id, steps_count: int, log_date: date,
         existing.steps_count = steps_count
         if distance_km:
             existing.distance_km = distance_km
-        existing.active_calories = int(steps_count * 0.04)
+        existing.calories_burned = int(steps_count * 0.04)
     else:
         step_record = DailySteps(
             user_id=user_id,
             log_date=log_date,
             steps_count=steps_count,
             distance_km=distance_km,
-            active_calories=int(steps_count * 0.04),
+            calories_burned=int(steps_count * 0.04),
         )
         db.add(step_record)
 
     await db.commit()
-    return {"steps_count": steps_count, "log_date": str(log_date), "active_calories": int(steps_count * 0.04)}
+    return {"steps_count": steps_count, "log_date": str(log_date), "calories_burned": int(steps_count * 0.04)}
 
 
 async def log_workout(db: AsyncSession, user_id, data):
     """Log a workout session."""
     duration = int((data.end_time - data.start_time).total_seconds() / 60)
-    
+
     # Estimate calories if not provided
     calories = data.calories_burned
     if not calories:
         met_values = {"low": 3, "moderate": 5, "high": 8}
         met = met_values.get(data.intensity, 5)
-        # Rough estimate: MET * weight_kg * hours
-        calories = int(met * 70 * (duration / 60))  # default 70kg
+        # Try to get user's latest weight for accurate calorie estimation
+        weight_kg = 70.0  # default
+        weight_result = await db.execute(
+            select(HealthRecord.weight_kg)
+            .where(HealthRecord.user_id == user_id, HealthRecord.weight_kg.is_not(None))
+            .order_by(HealthRecord.recorded_at.desc())
+            .limit(1)
+        )
+        latest_weight = weight_result.scalar_one_or_none()
+        if latest_weight:
+            weight_kg = float(latest_weight)
+        calories = int(met * weight_kg * (duration / 60))
 
     workout = Workout(
         user_id=user_id,
@@ -73,9 +83,10 @@ async def log_sleep(db: AsyncSession, user_id, sleep_hours: float, sleep_quality
     """Log sleep data as a health record."""
     record = HealthRecord(
         user_id=user_id,
-        record_type="lifestyle",
+        record_type="vitals",
+        sleep_hours=sleep_hours,
+        sleep_quality=str(sleep_quality), # Store as string to match model
         notes=f"Sleep: {sleep_hours} hours, Quality: {sleep_quality}/5",
-        symptoms={"sleep_hours": sleep_hours, "sleep_quality": sleep_quality},
         recorded_at=datetime.now(timezone.utc),
     )
     db.add(record)
@@ -87,9 +98,9 @@ async def log_water(db: AsyncSession, user_id, water_ml: int):
     """Log water intake."""
     record = HealthRecord(
         user_id=user_id,
-        record_type="lifestyle",
+        record_type="vitals",
+        water_intake_liters=water_ml / 1000.0,
         notes=f"Water intake: {water_ml}ml",
-        symptoms={"water_ml": water_ml},
         recorded_at=datetime.now(timezone.utc),
     )
     db.add(record)
@@ -99,6 +110,10 @@ async def log_water(db: AsyncSession, user_id, water_ml: int):
 
 async def get_daily_summary(db: AsyncSession, user_id, target_date: date) -> dict:
     """Get comprehensive daily fitness summary."""
+    # Get user for BMR calculation
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    
     # Steps
     step_result = await db.execute(
         select(DailySteps).where(DailySteps.user_id == user_id, DailySteps.log_date == target_date)
@@ -124,18 +139,67 @@ async def get_daily_summary(db: AsyncSession, user_id, target_date: date) -> dic
     workouts = workout_result.scalars().all()
     workout_calories = sum(w.calories_burned or 0 for w in workouts)
 
-    # BMR estimate (Mifflin-St Jeor, default values)
+    # Latest weight for BMR
+    weight_kg = 70.0
+    weight_result = await db.execute(
+        select(HealthRecord.weight_kg)
+        .where(HealthRecord.user_id == user_id, HealthRecord.weight_kg.is_not(None))
+        .order_by(HealthRecord.recorded_at.desc())
+        .limit(1)
+    )
+    latest_weight = weight_result.scalar_one_or_none()
+    if latest_weight:
+        weight_kg = float(latest_weight)
+
+    # BMR estimate (Mifflin-St Jeor)
+    height_cm = float(user.height_cm) if user and user.height_cm else 170.0
+    age = 30 # default
+    if user and user.date_of_birth:
+        age = (date.today() - user.date_of_birth).days // 365
+    
+    if user and user.gender == 'female':
+        bmr = (10 * weight_kg) + (6.25 * height_cm) - (5 * age) - 161
+    else:
+        bmr = (10 * weight_kg) + (6.25 * height_cm) - (5 * age) + 5
+        
     activity_calories = int(steps * 0.04)
-    bmr = 1600  # default estimate
-    total_calories = bmr + activity_calories + workout_calories
+    total_calories = int(bmr) + activity_calories + workout_calories
+
+    # Water estimate
+    water_result = await db.execute(
+        select(func.sum(HealthRecord.water_intake_liters))
+        .where(
+            HealthRecord.user_id == user_id,
+            HealthRecord.record_type == "vitals",
+            HealthRecord.recorded_at >= start_of_day,
+            HealthRecord.recorded_at < end_of_day,
+        )
+    )
+    total_water_liters = water_result.scalar_one_or_none() or 0
+    water_ml = int(total_water_liters * 1000)
+
+    # Sleep estimate
+    sleep_result = await db.execute(
+        select(func.sum(HealthRecord.sleep_hours))
+        .where(
+            HealthRecord.user_id == user_id,
+            HealthRecord.record_type == "vitals",
+            HealthRecord.recorded_at >= start_of_day,
+            HealthRecord.recorded_at < end_of_day,
+        )
+    )
+    total_sleep_hours = float(sleep_result.scalar_one_or_none() or 0)
 
     return {
         "date": str(target_date),
         "steps": steps,
         "step_goal": step_goal,
         "calories_total": total_calories,
-        "calories_bmr": bmr,
+        "calories_bmr": int(bmr),
         "calories_activity": activity_calories + workout_calories,
+        "sleep_hours": total_sleep_hours if total_sleep_hours > 0 else None,
+        "water_ml": water_ml,
+        "water_goal_ml": prefs.target_daily_water_liters * 1000 if prefs and hasattr(prefs, 'target_daily_water_liters') else 3000,
         "workouts": [
             {"type": w.workout_type, "duration": w.duration_minutes, "calories": w.calories_burned}
             for w in workouts
@@ -153,6 +217,6 @@ async def get_step_history(db: AsyncSession, user_id, days: int = 30) -> list:
     )
     records = result.scalars().all()
     return [
-        {"date": str(r.log_date), "steps": r.steps_count, "calories": r.active_calories or 0}
+        {"date": str(r.log_date), "steps": r.steps_count, "calories": r.calories_burned or 0}
         for r in records
     ]

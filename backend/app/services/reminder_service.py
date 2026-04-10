@@ -15,7 +15,8 @@ async def create_reminder(db: AsyncSession, user_id, data: ReminderCreateRequest
         description=data.description,
         category=data.category,
         reminder_time=data.reminder_time,
-        active_days=data.active_days or ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        frequency=getattr(data, 'frequency', 'daily'),
+        active_days=data.active_days,
     )
     db.add(reminder)
     await db.commit()
@@ -100,9 +101,6 @@ async def delete_reminder(db: AsyncSession, user_id, reminder_id: str) -> bool:
 
 async def get_today_schedule(db: AsyncSession, user_id) -> list:
     """Get today's scheduled reminders."""
-    import calendar
-    today_name = calendar.day_abbr[datetime.now().weekday()]  # Mon, Tue, etc.
-
     result = await db.execute(
         select(Reminder).where(
             Reminder.user_id == user_id,
@@ -111,7 +109,10 @@ async def get_today_schedule(db: AsyncSession, user_id) -> list:
     )
     reminders = result.scalars().all()
 
-    # Filter by active_days containing today
+    # DB uses 0=Sunday, 1=Monday, ..., 6=Saturday
+    # Python weekday() uses 0=Monday, 1=Tuesday, ..., 6=Sunday
+    # Convert: Mon(0)->1, Tue(1)->2, ..., Sun(6)->0
+    db_weekday = (datetime.now().weekday() + 1) % 7
     return [
         ReminderResponse(
             id=str(r.id),
@@ -122,5 +123,5 @@ async def get_today_schedule(db: AsyncSession, user_id) -> list:
             is_active=r.is_active,
         )
         for r in reminders
-        if r.active_days is None or today_name in r.active_days
+        if r.active_days is None or db_weekday in r.active_days
     ]

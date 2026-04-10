@@ -1,0 +1,22 @@
+# ============================================
+# Frontend (Flutter Web) — Service (NodePort)
+# ============================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: aarogya-sathi
+  labels:
+    app: aarogya-sathi
+    component: frontend
+spec:
+  type: NodePort
+  selector:
+    app: aarogya-sathi
+    component: frontend
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080
+      protocol: TCP
+      name: http
