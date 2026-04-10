@@ -51,7 +51,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # Copy application code
 COPY app/ ./app/
-COPY migrations/ ./migrations/
 
 # Change ownership
 RUN chown -R appuser:appuser /app
