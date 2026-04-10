@@ -1,10 +1,17 @@
 // ============================================
 // Aarogya Sathi — Jenkins CI/CD Pipeline
-// Pulls from GitHub → Lint → Test → Docker → APK
+// Pulled from GitHub → Lint → Docker → APK
 // ============================================
 
 pipeline {
     agent any
+
+    environment {
+        PYTHON_HOME  = 'C:\\Users\\ADMIN\\AppData\\Local\\Programs\\Python\\Python311'
+        FLUTTER_HOME = 'C:\\Users\\ADMIN\\flutter\\bin'
+        DOCKER_HOME  = 'C:\\Program Files\\Docker\\Docker\\resources\\bin'
+        PATH         = "${PYTHON_HOME};${PYTHON_HOME}\\Scripts;${FLUTTER_HOME};${DOCKER_HOME};${env.PATH}"
+    }
 
     options {
         timestamps()
